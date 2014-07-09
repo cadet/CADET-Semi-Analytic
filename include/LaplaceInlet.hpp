@@ -1,0 +1,71 @@
+// =============================================================================
+//  CADET-semi-analytic - The semi analytic extension of
+//  		CADET - The Chromatography Analysis and Design Toolkit
+//  
+//  Copyright © 2015: Samuel Leweke¹
+//                                      
+//    ¹ Forschungszentrum Juelich GmbH, IBG-1, Juelich, Germany.
+//  
+//  All rights reserved. This program and the accompanying materials
+//  are made available under the terms of the GNU Public License v3.0 (or, at
+//  your option, any later version) which accompanies this distribution, and
+//  is available at http://www.gnu.org/licenses/gpl.html
+// =============================================================================
+
+#ifndef CASEMA_INLETLAPLACE_HPP_
+#define CASEMA_INLETLAPLACE_HPP_
+
+#include "ModelData.hpp"
+
+namespace casema
+{
+	namespace laplaceSolution
+	{
+		template <typename num_t, typename data_t>
+		class Inlet
+		{
+		public: 
+			Inlet(const ModelData<data_t>& model) : _model(model), _two("2.0"), _three("3.0"), _six("6.0") { } 
+
+			template <typename eval_t>
+			eval_t operator()(const eval_t& s) const
+			{
+				eval_t val("0.0");
+				for (std::size_t i = 0; i < _model.nInletSections; ++i)
+				{
+					val += evalSection(i, s);
+				}
+				return val;
+			}
+
+		protected:
+			const ModelData<data_t>& _model;
+			const num_t _two;
+			const num_t _three;
+			const num_t _six;
+
+			template <typename eval_t>
+			eval_t evalSection(std::size_t i, const eval_t& s) const
+			{
+				const num_t T = _model.sectionTimes[i];
+				const num_t Q = _model.sectionTimes[i+1];
+				const num_t a = _model.constCoeff[i];
+				const num_t b = _model.linCoeff[i];
+				const num_t c = _model.quadCoeff[i];
+				const num_t d = _model.cubicCoeff[i];
+
+//				const eval_t tf = T^3 * d * s^3 + T^2 * c * s^3 + 3 * T^2 * d * s^2 + T * b * s^3 + 2 * T * c * s^2 + a * s^3 + 6 * T * d * s + b * s^2 + 2 * c * s + 6 * d;
+//				const eval_t qf = Q^3 * d * s^3 + Q^2 * c * s^3 + 3 * Q^2 * d * s^2 + Q * b * s^3 + 2 * Q * c * s^2 + a * s^3 + 6 * Q * d * s + b * s^2 + 2 * c * s + 6 * d;
+//				return (tf * mpfr::exp(-s*T) - qf * mpfr::exp(-s*Q)) / mpfr::pow(s,4);
+
+				const eval_t tf = T * ( (b + (_two * c + _six * d / s) / s) / s + T * (((_three / s + T) * d  + c) / s)) + (a + (b + (_two*c + _six * d / s) / s) / s) / s;
+				const eval_t qf = Q * ( (b + (_two * c + _six * d / s) / s) / s + Q * (((_three / s + Q) * d  + c) / s)) + (a + (b + (_two*c + _six * d / s) / s) / s) / s;
+				return tf * exp(-s*T) - qf * exp(-s*Q);
+			}
+		};
+
+	}
+
+}
+
+#endif
