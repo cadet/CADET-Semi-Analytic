@@ -118,16 +118,18 @@ namespace casema
         }
 
         template <typename real_t>
-        real_t mInSplinePiece(const real_t& t, const real_t& a, const real_t& cons, const real_t& lin, const real_t& quad, const real_t& cub)
+        real_t mInSplinePiece(const real_t& tU, const real_t& tL, const real_t& a, const real_t& cons, const real_t& lin, const real_t& quad, const real_t& cub)
         {
             const real_t six(6);
             const real_t two(2);
-            const real_t funcEval = abs(cons + t * (lin + t * (quad + t * cub)));
-            const real_t diffEval = abs(lin + t * (two * quad + real_t(3) * t * cub));
-            const real_t diff2Eval = abs(two*quad + t * six * cub);
-            const real_t rest = abs(((six * cub / a + diff2Eval) / a + diffEval) / a);
+            const real_t dt = tU - tL;
+            const real_t funcEval = abs(cons + dt * (lin + dt * (quad + dt * cub)));
+            const real_t diffEval = abs(lin + dt * (two * quad + real_t(3) * dt * cub));
+            const real_t diff2Eval = abs(two*quad + dt * six * cub);
+            const real_t upperRest = ((six * abs(cub) / a + diff2Eval) / a + diffEval) / a;
+            const real_t lowerRest = abs(cons) + (abs(lin) + ( two * abs(quad) + six * abs(cub) / a) / a) / a;
 
-            return exp(-a * t) * (funcEval + rest);
+            return exp(-a * tU) * (funcEval + upperRest) + exp(-a * tL) * lowerRest;;
         }
 
         template <typename real_t, template <class T> class ModelType>
@@ -136,8 +138,7 @@ namespace casema
             real_t mIn(0);
             for (std::size_t i = 0; i < model.nInletSections; ++i)
             {
-                mIn += mInSplinePiece(model.sectionTimes[i], a, model.constCoeff[i], model.linCoeff[i], model.quadCoeff[i], model.cubicCoeff[i]);
-                mIn += mInSplinePiece(model.sectionTimes[i+1], a, model.constCoeff[i], model.linCoeff[i], model.quadCoeff[i], model.cubicCoeff[i]);
+                mIn += mInSplinePiece(model.sectionTimes[i+1], model.sectionTimes[i], a, model.constCoeff[i], model.linCoeff[i], model.quadCoeff[i], model.cubicCoeff[i]);
             }
             return mIn;
         }
