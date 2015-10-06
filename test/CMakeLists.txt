@@ -109,6 +109,13 @@ list (APPEND CASEMA_TARGETS generalMomTest)
 
 # ------------------------------------------------------------------------------------------------------------------------
 
+add_executable (inletTest ${COMMON_SOURCES} ${CASEMA_SRC_DIR}/inletTest.cpp)
+target_link_libraries(inletTest ${GMP_LIBRARIES} ${MPFR_LIBRARIES} ${MPC_LIBRARIES} ${HDF5_LIBRARIES})
+
+list (APPEND CASEMA_TARGETS inletTest)
+
+# ------------------------------------------------------------------------------------------------------------------------
+
 add_executable (fourierCoeff ${COMMON_SOURCES} ${CASEMA_SRC_DIR}/fourierCoeff.cpp)
 target_link_libraries(fourierCoeff ${GMP_LIBRARIES} ${MPFR_LIBRARIES} ${MPC_LIBRARIES} ${HDF5_LIBRARIES})
 
