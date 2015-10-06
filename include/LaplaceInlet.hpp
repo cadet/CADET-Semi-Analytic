@@ -38,6 +38,21 @@ namespace casema
 				return val;
 			}
 
+			template <typename eval_t>
+			eval_t timeDomain(const eval_t& s) const
+			{
+				for (std::size_t i = 0; i < _model.nInletSections; ++i)
+				{
+					if ((_model.sectionTimes[i] <= s) && (s < _model.sectionTimes[i+1]))
+						return evalTimeDomainSection(i, s);
+				}
+
+				if (s == _model.sectionTimes[_model.nInletSections])
+					return evalTimeDomainSection(_model.nInletSections - 1, s);
+
+				return 0;
+			}
+
 		protected:
 			const ModelData<data_t>& _model;
 			const num_t _two;
@@ -59,6 +74,19 @@ namespace casema
 				const eval_t tf = dt * ( (b + (_two * c + _six * d / s) / s) / s + dt * (((_three / s + dt) * d  + c) / s)) + (a + (b + (_two*c + _six * d / s) / s) / s) / s;
 				return ff * exp(-s*Q) - tf * exp(-s*T);
 			}
+
+			template <typename eval_t>
+			eval_t evalTimeDomainSection(std::size_t i, const eval_t& s) const
+			{
+				const eval_t T = s - _model.sectionTimes[i];
+				
+				const num_t a = _model.constCoeff[i];
+				const num_t b = _model.linCoeff[i];
+				const num_t c = _model.quadCoeff[i];
+				const num_t d = _model.cubicCoeff[i];
+				
+				return a + T * (b + T * (c + T * d));
+			}			
 		};
 
 	}
