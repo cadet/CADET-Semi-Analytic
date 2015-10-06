@@ -47,20 +47,17 @@ namespace casema
 			template <typename eval_t>
 			eval_t evalSection(std::size_t i, const eval_t& s) const
 			{
-				const num_t T = _model.sectionTimes[i];
-				const num_t Q = _model.sectionTimes[i+1];
+				const num_t Q = _model.sectionTimes[i];
+				const num_t T = _model.sectionTimes[i+1];
+				const num_t dt = T - Q;
 				const num_t a = _model.constCoeff[i];
 				const num_t b = _model.linCoeff[i];
 				const num_t c = _model.quadCoeff[i];
 				const num_t d = _model.cubicCoeff[i];
 
-//				const eval_t tf = T^3 * d * s^3 + T^2 * c * s^3 + 3 * T^2 * d * s^2 + T * b * s^3 + 2 * T * c * s^2 + a * s^3 + 6 * T * d * s + b * s^2 + 2 * c * s + 6 * d;
-//				const eval_t qf = Q^3 * d * s^3 + Q^2 * c * s^3 + 3 * Q^2 * d * s^2 + Q * b * s^3 + 2 * Q * c * s^2 + a * s^3 + 6 * Q * d * s + b * s^2 + 2 * c * s + 6 * d;
-//				return (tf * mpfr::exp(-s*T) - qf * mpfr::exp(-s*Q)) / mpfr::pow(s,4);
-
-				const eval_t tf = T * ( (b + (_two * c + _six * d / s) / s) / s + T * (((_three / s + T) * d  + c) / s)) + (a + (b + (_two*c + _six * d / s) / s) / s) / s;
-				const eval_t qf = Q * ( (b + (_two * c + _six * d / s) / s) / s + Q * (((_three / s + Q) * d  + c) / s)) + (a + (b + (_two*c + _six * d / s) / s) / s) / s;
-				return tf * exp(-s*T) - qf * exp(-s*Q);
+				const eval_t ff = (a + (b + (_two*c + _six * d / s) / s) / s) / s;
+				const eval_t tf = dt * ( (b + (_two * c + _six * d / s) / s) / s + dt * (((_three / s + dt) * d  + c) / s)) + (a + (b + (_two*c + _six * d / s) / s) / s) / s;
+				return ff * exp(-s*Q) - tf * exp(-s*T);
 			}
 		};
 
