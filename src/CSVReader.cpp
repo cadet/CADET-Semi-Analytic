@@ -2,7 +2,7 @@
 //  CADET-semi-analytic - The semi analytic extension of
 //  		CADET - The Chromatography Analysis and Design Toolkit
 //  
-//  Copyright © 2015: Samuel Leweke¹
+//  Copyright © 2015-2017: Samuel Leweke¹
 //                                      
 //    ¹ Forschungszentrum Juelich GmbH, IBG-1, Juelich, Germany.
 //  
