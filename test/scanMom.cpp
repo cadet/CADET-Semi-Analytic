@@ -29,7 +29,7 @@
 #include "ModelReaderHelper.hpp"
 #include "ModelDataChecker.hpp"
 
-#include "GRMLaplaceSolution.hpp"
+#include "LaplaceSolution.hpp"
 #include "LaplaceInlet.hpp"
 
 #include "ADMoments.hpp"
@@ -104,31 +104,92 @@ void run(casema::ModelData<mpfr::mpreal>& model, const ProgramOptions& opts)
 	casema::MomentGenerator<mpfr::mpreal>* momGen = nullptr;
 	Inlet_t inlet(model);
 
-	if (model.kineticBinding)
+	switch (model.modelType)
 	{
-		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
-		
-		if (opts.useCppAD)
-			momGen = new casema::CppADMomentGenerator<mpfr::mpreal, Solution_t>(Solution_t(model, inlet));
-		else
-		{
+		case casema::GeneralRateModel:
+			if (model.kineticBinding)
+			{
+				typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				
+				if (opts.useCppAD)
+					momGen = new casema::CppADMomentGenerator<mpfr::mpreal, Solution_t>(Solution_t(model, inlet));
+				else
+				{
 #ifdef CASEMA_USE_FADBAD
-			momGen = new casema::FadBadMomentGenerator<mpfr::mpreal, Solution_t>(Solution_t(model, inlet));
-#endif            
-		}
-	}
-	else
-	{
-		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+					momGen = new casema::FadBadMomentGenerator<mpfr::mpreal, Solution_t>(Solution_t(model, inlet));
+#endif
+				}
+			}
+			else
+			{
+				typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
 
-		if (opts.useCppAD)
-			momGen = new casema::CppADMomentGenerator<mpfr::mpreal, Solution_t>(Solution_t(model,inlet));
-		else
-		{
+				if (opts.useCppAD)
+					momGen = new casema::CppADMomentGenerator<mpfr::mpreal, Solution_t>(Solution_t(model,inlet));
+				else
+				{
 #ifdef CASEMA_USE_FADBAD
-			momGen = new casema::FadBadMomentGenerator<mpfr::mpreal, Solution_t>(Solution_t(model, inlet));
-#endif            
-		}
+					momGen = new casema::FadBadMomentGenerator<mpfr::mpreal, Solution_t>(Solution_t(model, inlet));
+#endif
+				}
+			}
+			break;
+		case casema::LumpedRateModelWithPores:
+			if (model.kineticBinding)
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithPores::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				
+				if (opts.useCppAD)
+					momGen = new casema::CppADMomentGenerator<mpfr::mpreal, Solution_t>(Solution_t(model, inlet));
+				else
+				{
+#ifdef CASEMA_USE_FADBAD
+					momGen = new casema::FadBadMomentGenerator<mpfr::mpreal, Solution_t>(Solution_t(model, inlet));
+#endif
+				}
+			}
+			else
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithPores::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+
+				if (opts.useCppAD)
+					momGen = new casema::CppADMomentGenerator<mpfr::mpreal, Solution_t>(Solution_t(model,inlet));
+				else
+				{
+#ifdef CASEMA_USE_FADBAD
+					momGen = new casema::FadBadMomentGenerator<mpfr::mpreal, Solution_t>(Solution_t(model, inlet));
+#endif
+				}
+			}
+			break;
+		case casema::LumpedRateModelWithoutPores:
+			if (model.kineticBinding)
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithoutPores::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				
+				if (opts.useCppAD)
+					momGen = new casema::CppADMomentGenerator<mpfr::mpreal, Solution_t>(Solution_t(model, inlet));
+				else
+				{
+#ifdef CASEMA_USE_FADBAD
+					momGen = new casema::FadBadMomentGenerator<mpfr::mpreal, Solution_t>(Solution_t(model, inlet));
+#endif
+				}
+			}
+			else
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithoutPores::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+
+				if (opts.useCppAD)
+					momGen = new casema::CppADMomentGenerator<mpfr::mpreal, Solution_t>(Solution_t(model,inlet));
+				else
+				{
+#ifdef CASEMA_USE_FADBAD
+					momGen = new casema::FadBadMomentGenerator<mpfr::mpreal, Solution_t>(Solution_t(model, inlet));
+#endif
+				}
+			}
+			break;
 	}
 
 	const mpfr::mpreal normalization = casema::detail::injectedMass(model);

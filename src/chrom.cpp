@@ -36,7 +36,7 @@
 
 #include "MPComplex.hpp"
 #include "DurbinsMethod.hpp"
-#include "GRMLaplaceSolution.hpp"
+#include "LaplaceSolution.hpp"
 #include "LaplaceInlet.hpp"
 
 #include "Extrapolation.hpp"
@@ -176,15 +176,44 @@ void run(casema::ModelData<mpfr::mpreal>& model, const ProgramOptions<mpfr::mpre
 
 	std::vector<mpfr::mpreal> output;
 	Inlet_t inlet(model);
-	if (model.kineticBinding)
+	switch (model.modelType)
 	{
-		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
-		output = invert<casema::ModelData<mpfr::mpreal>, Solution_t, Inlet_t>(model, inlet, timeOffset, opts);
-	}
-	else
-	{
-		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
-		output = invert<casema::ModelData<mpfr::mpreal>, Solution_t, Inlet_t>(model, inlet, timeOffset, opts);
+		case casema::GeneralRateModel:
+			if (model.kineticBinding)
+			{
+				typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				output = invert<casema::ModelData<mpfr::mpreal>, Solution_t, Inlet_t>(model, inlet, timeOffset, opts);
+			}
+			else
+			{
+				typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				output = invert<casema::ModelData<mpfr::mpreal>, Solution_t, Inlet_t>(model, inlet, timeOffset, opts);
+			}
+			break;
+		case casema::LumpedRateModelWithPores:
+			if (model.kineticBinding)
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithPores::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				output = invert<casema::ModelData<mpfr::mpreal>, Solution_t, Inlet_t>(model, inlet, timeOffset, opts);
+			}
+			else
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithPores::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				output = invert<casema::ModelData<mpfr::mpreal>, Solution_t, Inlet_t>(model, inlet, timeOffset, opts);
+			}
+			break;
+		case casema::LumpedRateModelWithoutPores:
+			if (model.kineticBinding)
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithoutPores::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				output = invert<casema::ModelData<mpfr::mpreal>, Solution_t, Inlet_t>(model, inlet, timeOffset, opts);
+			}
+			else
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithoutPores::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				output = invert<casema::ModelData<mpfr::mpreal>, Solution_t, Inlet_t>(model, inlet, timeOffset, opts);
+			}
+			break;
 	}
 
 	std::cout << "Writing output" << std::endl;

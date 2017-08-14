@@ -33,7 +33,7 @@
 #include "ModelReaderHelper.hpp"
 #include "ModelDataChecker.hpp"
 
-#include "GRMLaplaceSolution.hpp"
+#include "LaplaceSolution.hpp"
 #include "LaplaceInlet.hpp"
 
 #include "AnalyticalMoments.hpp"
@@ -492,8 +492,12 @@ template <typename real_t>
 void run(std::ostream& os, const casema::ModelData<real_t>& model, casema::ConsensusEstimator<real_t>& estimator, casema::Sequence<real_t>& seq, const ProgramOptions<real_t>& opts)
 {
 	typedef casema::LaplaceSolution::Inlet<real_t, real_t> Inlet_t;
-	typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<real_t, real_t, Inlet_t> SolutionDyn_t;
-	typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<real_t, real_t, Inlet_t> SolutionREq_t;
+	typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<real_t, real_t, Inlet_t> GRMSolutionDyn_t;
+	typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<real_t, real_t, Inlet_t> GRMSolutionREq_t;
+	typedef casema::LaplaceSolution::LumpedRateModelWithPores::SingleComponentLinearDynamic<real_t, real_t, Inlet_t> LRMPSolutionDyn_t;
+	typedef casema::LaplaceSolution::LumpedRateModelWithPores::SingleComponentLinearRapidEquilibrium<real_t, real_t, Inlet_t> LRMPSolutionREq_t;
+	typedef casema::LaplaceSolution::LumpedRateModelWithoutPores::SingleComponentLinearDynamic<real_t, real_t, Inlet_t> LRMSolutionDyn_t;
+	typedef casema::LaplaceSolution::LumpedRateModelWithoutPores::SingleComponentLinearRapidEquilibrium<real_t, real_t, Inlet_t> LRMSolutionREq_t;
 
 	casema::MomentGenerator<real_t>* momGen = nullptr;
 	Inlet_t inlet(model);
@@ -511,27 +515,80 @@ void run(std::ostream& os, const casema::ModelData<real_t>& model, casema::Conse
 		return;
 	}
 
-	if (model.kineticBinding)
+	switch (model.modelType)
 	{
-		if (opts.useCppAD)
-			momGen = new casema::CppADMomentGenerator<real_t, SolutionDyn_t>(SolutionDyn_t(model, inlet));
-		else
-		{
+		case casema::GeneralRateModel:
+			if (model.kineticBinding)
+			{
+				if (opts.useCppAD)
+					momGen = new casema::CppADMomentGenerator<real_t, GRMSolutionDyn_t>(GRMSolutionDyn_t(model, inlet));
+				else
+				{
 #ifdef CASEMA_USE_FADBAD
-			momGen = new casema::FadBadMomentGenerator<real_t, SolutionDyn_t>(SolutionDyn_t(model, inlet));
-#endif            
-		}
-	}
-	else
-	{
-		if (opts.useCppAD)
-			momGen = new casema::CppADMomentGenerator<real_t, SolutionREq_t>(SolutionREq_t(model,inlet));
-		else
-		{
+					momGen = new casema::FadBadMomentGenerator<real_t, GRMSolutionDyn_t>(GRMSolutionDyn_t(model, inlet));
+#endif
+				}
+			}
+			else
+			{
+				if (opts.useCppAD)
+					momGen = new casema::CppADMomentGenerator<real_t, GRMSolutionREq_t>(GRMSolutionREq_t(model,inlet));
+				else
+				{
 #ifdef CASEMA_USE_FADBAD
-			momGen = new casema::FadBadMomentGenerator<real_t, SolutionREq_t>(SolutionREq_t(model, inlet));
-#endif            
-		}
+					momGen = new casema::FadBadMomentGenerator<real_t, GRMSolutionREq_t>(GRMSolutionREq_t(model, inlet));
+#endif
+				}
+			}
+			break;
+		case casema::LumpedRateModelWithPores:
+			if (model.kineticBinding)
+			{
+				if (opts.useCppAD)
+					momGen = new casema::CppADMomentGenerator<real_t, LRMPSolutionDyn_t>(LRMPSolutionDyn_t(model, inlet));
+				else
+				{
+#ifdef CASEMA_USE_FADBAD
+					momGen = new casema::FadBadMomentGenerator<real_t, LRMPSolutionDyn_t>(LRMPSolutionDyn_t(model, inlet));
+#endif
+				}
+			}
+			else
+			{
+				if (opts.useCppAD)
+					momGen = new casema::CppADMomentGenerator<real_t, LRMPSolutionREq_t>(LRMPSolutionREq_t(model,inlet));
+				else
+				{
+#ifdef CASEMA_USE_FADBAD
+					momGen = new casema::FadBadMomentGenerator<real_t, LRMPSolutionREq_t>(LRMPSolutionREq_t(model, inlet));
+#endif
+				}
+			}
+			break;
+		case casema::LumpedRateModelWithoutPores:
+			if (model.kineticBinding)
+			{
+				if (opts.useCppAD)
+					momGen = new casema::CppADMomentGenerator<real_t, LRMSolutionDyn_t>(LRMSolutionDyn_t(model, inlet));
+				else
+				{
+#ifdef CASEMA_USE_FADBAD
+					momGen = new casema::FadBadMomentGenerator<real_t, LRMSolutionDyn_t>(LRMSolutionDyn_t(model, inlet));
+#endif
+				}
+			}
+			else
+			{
+				if (opts.useCppAD)
+					momGen = new casema::CppADMomentGenerator<real_t, LRMSolutionREq_t>(LRMSolutionREq_t(model,inlet));
+				else
+				{
+#ifdef CASEMA_USE_FADBAD
+					momGen = new casema::FadBadMomentGenerator<real_t, LRMSolutionREq_t>(LRMSolutionREq_t(model, inlet));
+#endif
+				}
+			}
+			break;
 	}
 
 	// Get 0th order moment

@@ -22,9 +22,17 @@
 namespace casema
 {
 
+	enum ChromatographyUnitType : int
+	{
+		GeneralRateModel,
+		LumpedRateModelWithPores,
+		LumpedRateModelWithoutPores
+	};
+
 	template <typename real_t>
 	struct ModelData
 	{
+		ChromatographyUnitType modelType;
 		std::size_t nComponents;
 		
 		std::vector<real_t> initialLiquidConcentration;

@@ -31,7 +31,7 @@
 
 #include "MPComplex.hpp"
 #include "Constants.hpp"
-#include "GRMLaplaceSolution.hpp"
+#include "LaplaceSolution.hpp"
 #include "LaplaceInlet.hpp"
 
 typedef casema::LaplaceSolution::Inlet<mpfr::mpreal, mpfr::mpreal> Inlet_t;
@@ -142,23 +142,68 @@ void run(const casema::ModelData<mpfr::mpreal>& model, ProgramOptions<mpfr::mpre
 	std::vector<mpfr::mpreal> error(opts.summands, errorPrefactor);
 	Inlet_t inlet(model);
 
-	if (model.kineticBinding)
+	switch (model.modelType)
 	{
-		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
-		Solution_t solution(model, inlet);
-		if (opts.withoutInlet)
-			fourierCoeff<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(opts.precision, opts.summands, opts.tMax, opts.sigma, solution, errorExponentFactor, output, error);
-		else
-			fourierCoeff<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(opts.precision, opts.summands, opts.tMax, opts.sigma, solution, inlet, errorExponentFactor, output, error);
-	}
-	else
-	{
-		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
-		Solution_t solution(model, inlet);
-		if (opts.withoutInlet)
-			fourierCoeff<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(opts.precision, opts.summands, opts.tMax, opts.sigma, solution, errorExponentFactor, output, error);
-		else
-			fourierCoeff<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(opts.precision, opts.summands, opts.tMax, opts.sigma, solution, inlet, errorExponentFactor, output, error);
+		case casema::GeneralRateModel:
+			if (model.kineticBinding)
+			{
+				typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				Solution_t solution(model, inlet);
+				if (opts.withoutInlet)
+					fourierCoeff<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(opts.precision, opts.summands, opts.tMax, opts.sigma, solution, errorExponentFactor, output, error);
+				else
+					fourierCoeff<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(opts.precision, opts.summands, opts.tMax, opts.sigma, solution, inlet, errorExponentFactor, output, error);
+			}
+			else
+			{
+				typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				Solution_t solution(model, inlet);
+				if (opts.withoutInlet)
+					fourierCoeff<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(opts.precision, opts.summands, opts.tMax, opts.sigma, solution, errorExponentFactor, output, error);
+				else
+					fourierCoeff<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(opts.precision, opts.summands, opts.tMax, opts.sigma, solution, inlet, errorExponentFactor, output, error);
+			}
+			break;
+		case casema::LumpedRateModelWithPores:
+			if (model.kineticBinding)
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithPores::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				Solution_t solution(model, inlet);
+				if (opts.withoutInlet)
+					fourierCoeff<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(opts.precision, opts.summands, opts.tMax, opts.sigma, solution, errorExponentFactor, output, error);
+				else
+					fourierCoeff<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(opts.precision, opts.summands, opts.tMax, opts.sigma, solution, inlet, errorExponentFactor, output, error);
+			}
+			else
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithPores::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				Solution_t solution(model, inlet);
+				if (opts.withoutInlet)
+					fourierCoeff<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(opts.precision, opts.summands, opts.tMax, opts.sigma, solution, errorExponentFactor, output, error);
+				else
+					fourierCoeff<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(opts.precision, opts.summands, opts.tMax, opts.sigma, solution, inlet, errorExponentFactor, output, error);
+			}
+			break;
+		case casema::LumpedRateModelWithoutPores:
+			if (model.kineticBinding)
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithoutPores::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				Solution_t solution(model, inlet);
+				if (opts.withoutInlet)
+					fourierCoeff<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(opts.precision, opts.summands, opts.tMax, opts.sigma, solution, errorExponentFactor, output, error);
+				else
+					fourierCoeff<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(opts.precision, opts.summands, opts.tMax, opts.sigma, solution, inlet, errorExponentFactor, output, error);
+			}
+			else
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithoutPores::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				Solution_t solution(model, inlet);
+				if (opts.withoutInlet)
+					fourierCoeff<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(opts.precision, opts.summands, opts.tMax, opts.sigma, solution, errorExponentFactor, output, error);
+				else
+					fourierCoeff<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(opts.precision, opts.summands, opts.tMax, opts.sigma, solution, inlet, errorExponentFactor, output, error);
+			}
+			break;
 	}
 
 	if (opts.outFile.empty())

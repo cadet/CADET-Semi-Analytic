@@ -33,7 +33,7 @@
 
 #include "MPComplex.hpp"
 #include "Constants.hpp"
-#include "GRMLaplaceSolution.hpp"
+#include "LaplaceSolution.hpp"
 #include "LaplaceInlet.hpp"
 #include "CliErrorParser.hpp"
 

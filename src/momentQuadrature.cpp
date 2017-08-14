@@ -36,7 +36,7 @@
 
 #include "MPComplex.hpp"
 #include "DurbinsMethod.hpp"
-#include "GRMLaplaceSolution.hpp"
+#include "LaplaceSolution.hpp"
 #include "LaplaceInlet.hpp"
 
 #include "AnalyticalMoments.hpp"
@@ -288,17 +288,50 @@ void run(const casema::ModelData<mpfr::mpreal>& model, const ProgramOptions<mpfr
 	}
 
 	Inlet_t inlet(model);
-	if (model.kineticBinding)
+	switch (model.modelType)
 	{
-		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
-		Solution_t solution(model, inlet);
-		calcMoment<mpfr::mpreal, Solution_t>(solution, model, opts, *os);
-	}
-	else
-	{
-		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
-		Solution_t solution(model, inlet);
-		calcMoment<mpfr::mpreal, Solution_t>(solution, model, opts, *os);
+		case casema::GeneralRateModel:
+			if (model.kineticBinding)
+			{
+				typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				Solution_t solution(model, inlet);
+				calcMoment<mpfr::mpreal, Solution_t>(solution, model, opts, *os);
+			}
+			else
+			{
+				typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				Solution_t solution(model, inlet);
+				calcMoment<mpfr::mpreal, Solution_t>(solution, model, opts, *os);
+			}
+			break;
+		case casema::LumpedRateModelWithPores:
+			if (model.kineticBinding)
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithPores::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				Solution_t solution(model, inlet);
+				calcMoment<mpfr::mpreal, Solution_t>(solution, model, opts, *os);
+			}
+			else
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithPores::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				Solution_t solution(model, inlet);
+				calcMoment<mpfr::mpreal, Solution_t>(solution, model, opts, *os);
+			}
+			break;
+		case casema::LumpedRateModelWithoutPores:
+			if (model.kineticBinding)
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithoutPores::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				Solution_t solution(model, inlet);
+				calcMoment<mpfr::mpreal, Solution_t>(solution, model, opts, *os);
+			}
+			else
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithoutPores::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				Solution_t solution(model, inlet);
+				calcMoment<mpfr::mpreal, Solution_t>(solution, model, opts, *os);
+			}
+			break;
 	}
 
 	if (!opts.outFile.empty())

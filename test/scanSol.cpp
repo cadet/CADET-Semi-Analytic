@@ -30,7 +30,7 @@
 #include "ModelDataChecker.hpp"
 
 #include "MPComplex.hpp"
-#include "GRMLaplaceSolution.hpp"
+#include "LaplaceSolution.hpp"
 #include "LaplaceInlet.hpp"
 
 typedef casema::LaplaceSolution::Inlet<mpfr::mpreal, mpfr::mpreal> Inlet_t;
@@ -121,34 +121,58 @@ void run(casema::ModelData<mpfr::mpreal>& model, std::size_t nRe, std::size_t nI
 	std::cout << "Computing " << nRe * nIm << " function evaluations" << std::endl;
 
 	Inlet_t inlet(model);
-	if (model.kineticBinding)
+	std::ostream* os = &std::cout;
+	if (!outFile.empty())
+		os = new std::ofstream(outFile, std::ofstream::out | std::ofstream::trunc);
+
+	switch (model.modelType)
 	{
-		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
-		Solution_t solution(model, inlet);
-		if (outFile.empty())
-		{
-			writeResult<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(std::cout, outPrecision, solution, nRe, nIm, maxRe, minRe, maxIm, minIm, useLogLinear, precision, false);
-		}
-		else
-		{
-			std::ofstream fs(outFile, std::ofstream::out | std::ofstream::trunc);
-			writeResult<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(fs, outPrecision, solution, nRe, nIm, maxRe, minRe, maxIm, minIm, useLogLinear, precision, true);
-		}
+		case casema::GeneralRateModel:
+			if (model.kineticBinding)
+			{
+				typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				Solution_t solution(model, inlet);
+				writeResult<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(*os, outPrecision, solution, nRe, nIm, maxRe, minRe, maxIm, minIm, useLogLinear, precision, !outFile.empty());
+			}
+			else
+			{
+				typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				Solution_t solution(model, inlet);
+				writeResult<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(*os, outPrecision, solution, nRe, nIm, maxRe, minRe, maxIm, minIm, useLogLinear, precision, !outFile.empty());
+			}
+			break;
+		case casema::LumpedRateModelWithPores:
+			if (model.kineticBinding)
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithPores::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				Solution_t solution(model, inlet);
+				writeResult<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(*os, outPrecision, solution, nRe, nIm, maxRe, minRe, maxIm, minIm, useLogLinear, precision, !outFile.empty());
+			}
+			else
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithPores::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				Solution_t solution(model, inlet);
+				writeResult<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(*os, outPrecision, solution, nRe, nIm, maxRe, minRe, maxIm, minIm, useLogLinear, precision, !outFile.empty());
+			}
+			break;
+		case casema::LumpedRateModelWithoutPores:
+			if (model.kineticBinding)
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithoutPores::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				Solution_t solution(model, inlet);
+				writeResult<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(*os, outPrecision, solution, nRe, nIm, maxRe, minRe, maxIm, minIm, useLogLinear, precision, !outFile.empty());
+			}
+			else
+			{
+				typedef casema::LaplaceSolution::LumpedRateModelWithoutPores::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+				Solution_t solution(model, inlet);
+				writeResult<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(*os, outPrecision, solution, nRe, nIm, maxRe, minRe, maxIm, minIm, useLogLinear, precision, !outFile.empty());
+			}
+			break;
 	}
-	else
-	{
-		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
-		Solution_t solution(model, inlet);
-		if (outFile.empty())
-		{
-			writeResult<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(std::cout, outPrecision, solution, nRe, nIm, maxRe, minRe, maxIm, minIm, useLogLinear, precision, false);
-		}
-		else
-		{
-			std::ofstream fs(outFile, std::ofstream::out | std::ofstream::trunc);
-			writeResult<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(fs, outPrecision, solution, nRe, nIm, maxRe, minRe, maxIm, minIm, useLogLinear, precision, true);
-		}
-	}
+
+	if (!outFile.empty())
+		delete os;
 }
 
 

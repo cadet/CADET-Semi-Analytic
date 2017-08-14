@@ -221,6 +221,13 @@ namespace casema
 				}
 				else if ((uoType == "GENERAL_RATE_MODEL") || (uoType == "LUMPED_RATE_MODEL_WITHOUT_PORES") || (uoType == "LUMPED_RATE_MODEL_WITH_PORES"))
 				{
+					if (uoType == "GENERAL_RATE_MODEL")
+						data.modelType = GeneralRateModel;
+					else if (uoType == "LUMPED_RATE_MODEL_WITH_PORES")
+						data.modelType = LumpedRateModelWithPores;
+					else if (uoType == "LUMPED_RATE_MODEL_WITHOUT_PORES")
+						data.modelType = LumpedRateModelWithoutPores;
+
 					const bool hasPores = (uoType != "LUMPED_RATE_MODEL_WITHOUT_PORES");
 
 					data.nComponents = reader.template scalar<int>("NCOMP");
