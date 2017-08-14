@@ -1,6 +1,6 @@
 // =============================================================================
 //  CADET-semi-analytic - The semi analytic extension of
-//          CADET - The Chromatography Analysis and Design Toolkit
+//  		CADET - The Chromatography Analysis and Design Toolkit
 //  
 //  Copyright © 2015-2017: Samuel Leweke¹
 //                                      
@@ -10,12 +10,6 @@
 //  are made available under the terms of the GNU Public License v3.0 (or, at
 //  your option, any later version) which accompanies this distribution, and
 //  is available at http://www.gnu.org/licenses/gpl.html
-//
-//  This file is taken from the CADET core project. The authors of this very
-//  file are listed in the copyright notice below:
-//  Copyright © 2008-2015: Eric von Lieres¹, Joel Andersson¹,
-//                         Andreas Puettmann¹, Sebastian Schnittert¹,
-//                         Samuel Leweke¹
 // =============================================================================
 
 #ifndef XMLBASE_HPP_
@@ -25,11 +19,13 @@
 #include <sstream>
 #include <vector>
 #include <stack>
-#include <stdexcept>
 
-#include "pugixml.hpp"
+#include <pugixml.hpp>
 
-namespace casema {
+#include "IOException.hpp"
+
+namespace casema 
+{
 
 using namespace pugi;
 
@@ -52,6 +48,11 @@ public:
 	/// \brief Set a group to be [read from/written to] in all subsequent calls to [read/write] methods
 	inline void setGroup(const std::string& groupName);
 
+	/// \brief Open the subgroup with the given name
+	inline void pushGroup(const std::string& groupName);
+	/// \brief Close the currently open subgroup 
+	inline void popGroup();
+
 	/// \brief Checks if the given dataset or group exists in the file
 	inline bool exists(const std::string& elementName) { return exists(elementName.c_str()); }
 	inline bool exists(const char* elementName);
@@ -62,13 +63,15 @@ public:
 
 protected:
 
-	xml_document _doc;                          //!< Root of the XML document
+	xml_document _doc;                          //!< XML document
+	xml_node _root;                             //!< XML root node
 	bool _enable_write;                         //!< Specifies write permission for currently opened XML file
 	std::string _fileName;                      //!< Name of the currently opened XML file
 
 	static const std::string _textSeparator;    //!< Character sequence for separation of text entries
 	static const std::string _dimsSeparator;    //!< Character sequence for separation of dimensions
 
+	static const std::string _nodeRoot;         //!< Name used for the root node
 	static const std::string _nodeGrp;          //!< Name used for creation of 'group' nodes
 	static const std::string _nodeDset;         //!< Name used for creation of 'dataset' nodes
 
@@ -80,6 +83,7 @@ protected:
 
 	static const std::string _typeChar;         //!< Name used for 'type' attributes of type 'char'
 	static const std::string _typeInt;          //!< Name used for 'type' attributes of type 'int'
+	static const std::string _typeUint64;       //!< Name used for 'type' attributes of type 'uint64_t'
 	static const std::string _typeDouble;       //!< Name used for 'type' attributes of type 'double'
 	static const std::string _typeBool;         //!< Name used for 'type' attributes of type 'bool'
 
@@ -89,6 +93,8 @@ protected:
 
 	void openGroup(bool forceCreation = false);
 	void closeGroup();
+
+	void findOrCreateRootNode();
 
 	// Some helper methods
 	std::vector<std::string>& split(const std::string& s, const char* delim, std::vector<std::string>& elems);
@@ -100,6 +106,7 @@ protected:
 const std::string XMLBase::_textSeparator = ", ";
 const std::string XMLBase::_dimsSeparator = "x";
 
+const std::string XMLBase::_nodeRoot  = "cadet";
 const std::string XMLBase::_nodeGrp   = "group";
 const std::string XMLBase::_nodeDset  = "dataset";
 
@@ -111,15 +118,11 @@ const std::string XMLBase::_attrValue = "value";
 
 const std::string XMLBase::_typeChar   = "char";
 const std::string XMLBase::_typeInt    = "int";
+const std::string XMLBase::_typeUint64 = "uint64_t";
 const std::string XMLBase::_typeDouble = "double";
 const std::string XMLBase::_typeBool   = "bool";
 
 
-
-
-// ====================================================================================================================
-//    IMPLEMENTATION PART
-// ====================================================================================================================
 XMLBase::XMLBase() :
 	_enable_write(false)
 {}
@@ -135,35 +138,38 @@ void XMLBase::openFile(const std::string& fileName, const std::string& mode)
 {
 	xml_parse_result flag;
 
-	if      (mode == "r" ) // open in read mode
+	if (mode == "r" ) // open in read mode
 	{
-		if (!_doc.load_file(fileName.c_str())) throw std::invalid_argument("XML file does not exist!");
+		if (!_doc.load_file(fileName.c_str())) 
+			throw IOException("XML file does not exist!");
 		_enable_write = false;
 	}
 	else if (mode == "rw") // open in read / write mode
 	{
-		if (!_doc.load_file(fileName.c_str())) throw std::invalid_argument("XML file does not exist!");
+		if (!_doc.load_file(fileName.c_str())) 
+			throw IOException("XML file does not exist!");
 		_enable_write = true;
 	}
 	else if (mode == "c" ) // create new file
 	{
-		if (_doc.load_file(fileName.c_str())) throw std::invalid_argument("XML file already exists");
+		if (_doc.load_file(fileName.c_str())) 
+			throw IOException("XML file already exists");
 		_enable_write = true;
 	}
 	else if (mode == "co") // create / overwrite new file
 		_enable_write = true;
 	else
-		throw std::invalid_argument("Wrong file open mode");
+		throw IOException("Wrong file open mode");
 
+	findOrCreateRootNode();
 	_fileName = fileName;
 }
 
 
-
-
 void XMLBase::closeFile()
 {
-	if (_enable_write) _doc.save_file(_fileName.c_str());
+	if (_enable_write) 
+		_doc.save_file(_fileName.c_str());
 }
 
 
@@ -186,7 +192,7 @@ bool XMLBase::isVector(const char* elementName)
 	{
 		std::ostringstream oss;
 		oss << "Dataset '" << elementName << "' does not exist!";
-		throw std::invalid_argument(oss.str());
+		throw IOException(oss.str());
 	}
 
 	// Read text and attributes
@@ -199,7 +205,7 @@ bool XMLBase::isVector(const char* elementName)
 	for (size_t i = 0; i < rank; ++i)
 	{
 		int j;
-		std::stringstream ss(dims_vec.at(i));
+		std::stringstream ss(dims_vec[i]);
 		ss >> j;
 		items *= j;
 	}
@@ -218,11 +224,11 @@ void XMLBase::setGroup(const std::string& groupName)
 	std::string delimiter("/");
 
 	// Quick return when called with empty group name
-	if (groupName.empty())
+	if (groupName.empty() || (groupName == "/"))
 		return;
 
 	// Don't care for a preceding delimiter
-	if (groupName.at(0) == delimiter.at(0)) ++start;
+	if (groupName[0] == delimiter[0]) ++start;
 
 	while (end != std::string::npos)
 	{
@@ -237,6 +243,16 @@ void XMLBase::setGroup(const std::string& groupName)
 }
 
 
+void XMLBase::pushGroup(const std::string& groupName)
+{
+	_groupNames.push_back(groupName);
+}
+
+
+void XMLBase::popGroup()
+{
+	_groupNames.pop_back();
+}
 
 
 void XMLBase::openGroup(bool forceCreation)
@@ -245,16 +261,23 @@ void XMLBase::openGroup(bool forceCreation)
 	while (_groupExists.size() > 0)  _groupExists.pop();
 
 	// Generate xpath query string
-	std::ostringstream query;
+	std::ostringstream query(std::ostringstream::ate);
 	for (std::vector<std::string>::const_iterator it = _groupNames.begin(); it < _groupNames.end(); ++it)
 	{
 		query << "/" << _nodeGrp << "[@" << _attrName << "='" << *it << "']";
 		// Store query string of parent groups for potential later usage
-		if (_doc.select_single_node(query.str().c_str())) _groupExists.push(query.str());
+		if (_root.select_single_node(("/" + _nodeRoot + query.str()).c_str())) { _groupExists.push(query.str()); }
+	}
+
+	if (_groupNames.empty())
+	{
+		// Select root node
+		_groupOpened = _root.select_single_node(("/" + _nodeRoot).c_str());
+		return;
 	}
 
 	// Try to open the selected group
-	_groupOpened = _doc.select_single_node(query.str().c_str());
+	_groupOpened = _root.select_single_node(("/" + _nodeRoot + query.str()).c_str());
 
 	// Create new group if not existent, creation is forced and write is permitted
 	if (!_groupOpened)
@@ -270,12 +293,12 @@ void XMLBase::openGroup(bool forceCreation)
 				// Select the least group
 				if (_groupExists.size() > 0)
 				{
-					_groupOpened = _doc.select_single_node(_groupExists.top().c_str());
+					_groupOpened = _root.select_single_node(("/" + _nodeRoot + _groupExists.top()).c_str());
 					// Create a new group
 					newNode = _groupOpened.node().append_child(_nodeGrp.c_str());
 					query << _groupExists.top();
 				}
-				else newNode = _doc.append_child(_nodeGrp.c_str());
+				else newNode = _root.append_child(_nodeGrp.c_str());
 
 				// Set attribute name
 				newNode.append_attribute(_attrName.c_str()) = it->c_str();
@@ -285,9 +308,10 @@ void XMLBase::openGroup(bool forceCreation)
 				_groupExists.push(query.str());
 			}
 			// Open newly created group
-			_groupOpened = _doc.select_single_node(query.str().c_str());
+			_groupOpened = _root.select_single_node(("/" + _nodeRoot + query.str()).c_str());
 		}
-		else throw std::invalid_argument("Group was not opened/created! Either not existent, creation not forced or file not opened in write mode");
+		else
+			throw IOException("Group was not opened/created! Either not existent, creation not forced or file not opened in write mode");
 	}
 }
 
@@ -298,6 +322,22 @@ void XMLBase::closeGroup()
 	while (_groupExists.size() > 0)  _groupExists.pop();
 }
 
+
+
+void XMLBase::findOrCreateRootNode()
+{
+	xpath_node rootNode = _doc.select_single_node(("/" + _nodeRoot).c_str());
+	if (!rootNode && _enable_write)
+	{
+		// Root node not found and we can write -> create one
+		_root = _doc.append_child(_nodeRoot.c_str());
+	}
+	else if (rootNode)
+	{
+		// Root node found
+		_root = rootNode.node();
+	}
+}
 
 
 std::vector<std::string>& XMLBase::split(const std::string& s, const char* delim, std::vector<std::string>& elems)
@@ -316,7 +356,6 @@ std::vector<std::string> XMLBase::split(const std::string& s, const char* delim)
 	std::vector<std::string> elems;
 	return split(s, delim, elems);
 }
-
 
 } // namespace casema
 

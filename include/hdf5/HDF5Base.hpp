@@ -22,14 +22,10 @@
 
 #include <hdf5.h>
 
+#include "IOException.hpp"
+
 namespace casema
 {
-
-class IOException : public std::runtime_error
-{
-public:
-	IOException(const std::string& message) : std::runtime_error(message) { }
-};
 
 class HDF5Base
 {

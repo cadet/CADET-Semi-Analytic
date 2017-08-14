@@ -1,6 +1,6 @@
 // =============================================================================
 //  CADET-semi-analytic - The semi analytic extension of
-//          CADET - The Chromatography Analysis and Design Toolkit
+//  		CADET - The Chromatography Analysis and Design Toolkit
 //  
 //  Copyright © 2015-2017: Samuel Leweke¹
 //                                      
@@ -10,12 +10,6 @@
 //  are made available under the terms of the GNU Public License v3.0 (or, at
 //  your option, any later version) which accompanies this distribution, and
 //  is available at http://www.gnu.org/licenses/gpl.html
-//
-//  This file is taken from the CADET core project. The authors of this very
-//  file are listed in the copyright notice below:
-//  Copyright © 2008-2015: Eric von Lieres¹, Joel Andersson¹,
-//                         Andreas Puettmann¹, Sebastian Schnittert¹,
-//                         Samuel Leweke¹
 // =============================================================================
 
 #ifndef XMLWRITER_HPP_
@@ -25,7 +19,8 @@
 
 #include "XMLBase.hpp"
 
-namespace casema {
+namespace casema
+{
 
 using namespace pugi;
 
@@ -43,29 +38,33 @@ public:
 	template <typename T>
 	void write(const std::string& dataSetName, const size_t rank, const size_t* dims, const T* buffer);
 
+	/// \brief Write data from C-array to a dataset
+	template <typename T>
+	void write(const std::string& dataSetName, const size_t rank, const size_t* dims, const T* buffer, const size_t stride);
+
 	/// \brief Convenience wrapper for writing tensors from C-array
 	template <typename T>
-	void tensor(const std::string& dataSetName, const size_t rank, const size_t* dims, const T* buffer);
+	void tensor(const std::string& dataSetName, const size_t rank, const size_t* dims, const T* buffer, const size_t stride = 1);
 
 	/// \brief Convenience wrapper for writing tensors from std::vector
 	template <typename T>
-	void tensor(const std::string& dataSetName, const size_t rank, const size_t* dims, const std::vector<T>& buffer);
+	void tensor(const std::string& dataSetName, const size_t rank, const size_t* dims, const std::vector<T>& buffer, const size_t stride = 1);
 
 	/// \brief Convenience wrapper for writing matrices from C-array
 	template <typename T>
-	void matrix(const std::string& dataSetName, const size_t rows, const size_t cols, const T* buffer);
+	void matrix(const std::string& dataSetName, const size_t rows, const size_t cols, const T* buffer, const size_t stride = 1);
 
 	/// \brief Convenience wrapper for writing matrices from std::vector
 	template <typename T>
-	void matrix(const std::string& dataSetName, const size_t rows, const size_t cols, const std::vector<T>& buffer);
+	void matrix(const std::string& dataSetName, const size_t rows, const size_t cols, const std::vector<T>& buffer, const size_t stride = 1);
 
 	/// \brief Convenience wrapper for writing vectors from C-array
 	template <typename T>
-	void vector(const std::string& dataSetName, const size_t length, const T* buffer);
+	void vector(const std::string& dataSetName, const size_t length, const T* buffer, const size_t stride = 1);
 
 	/// \brief Convenience wrapper for writing vectors from std::vector
 	template <typename T>
-	void vector(const std::string& dataSetName, const std::vector<T>& buffer);
+	void vector(const std::string& dataSetName, const std::vector<T>& buffer, const size_t stride = 1);
 
 	/// \brief Convenience wrapper for writing scalars
 	template <typename T>
@@ -74,6 +73,10 @@ public:
 	/// \brief This functionality is not supported by XML - this is a stub.
 	///        Removes an existing group from the file.
 	inline void unlinkGroup(const std::string& groupName) {}
+
+	/// \brief This functionality is not supported by XML - this is a stub.
+	///        Removes an existing dataset from the current group.
+	inline void unlinkDataset(const std::string& dsName) {}
 
 	/// \brief This functionality is not supported by XML - this is a stub.
 	///        Set the level of compression used for tensors of 2nd order and above
@@ -89,21 +92,13 @@ private:
 	std::string _typeName;                      //!< Name of the type to be written
 
 	template <typename T>
-	void writeWork(const std::string& dataSetName, const size_t rank, const size_t* dims, const T* buffer);
+	void writeWork(const std::string& dataSetName, const size_t rank, const size_t* dims, const T* buffer, const size_t stride);
 };
 
 
+XMLWriter::XMLWriter() { }
 
-
-// ====================================================================================================================
-//   IMPLEMENTATION PART
-// ====================================================================================================================
-
-XMLWriter::XMLWriter() {}
-
-XMLWriter::~XMLWriter() {}
-
-
+XMLWriter::~XMLWriter() { }
 
 
 // ============================================================================================================
@@ -111,20 +106,25 @@ XMLWriter::~XMLWriter() {}
 // ============================================================================================================
 
 template <>
-void XMLWriter::write<double>(const std::string& dataSetName, const size_t rank, const size_t* dims, const double* buffer)
+void XMLWriter::write<double>(const std::string& dataSetName, const size_t rank, const size_t* dims, const double* buffer, const size_t stride)
 {
 	_typeName = _typeDouble;
-	writeWork<double>(dataSetName, rank, dims, buffer);
+	writeWork<double>(dataSetName, rank, dims, buffer, stride);
 }
-
 
 template <>
-void XMLWriter::write<int>(const std::string& dataSetName, const size_t rank, const size_t* dims, const int* buffer)
+void XMLWriter::write<int>(const std::string& dataSetName, const size_t rank, const size_t* dims, const int* buffer, const size_t stride)
 {
-	_typeName = _typeInt;
-	writeWork<int>(dataSetName, rank, dims, buffer);
+	_typeName = _typeUint64;
+	writeWork<int>(dataSetName, rank, dims, buffer, stride);
 }
 
+template <>
+void XMLWriter::write<uint64_t>(const std::string& dataSetName, const size_t rank, const size_t* dims, const uint64_t* buffer, const size_t stride)
+{
+	_typeName = _typeInt;
+	writeWork<uint64_t>(dataSetName, rank, dims, buffer, stride);
+}
 
 //template <>
 //void XMLWriter::write<bool>(const std::string& dataSetName, const size_t rank, const size_t* dims, const bool* buffer)
@@ -135,7 +135,7 @@ void XMLWriter::write<int>(const std::string& dataSetName, const size_t rank, co
 
 
 template <>
-void XMLWriter::write<std::string>(const std::string& dataSetName, const size_t rank, const size_t* dims, const std::string* buffer)
+void XMLWriter::write<std::string>(const std::string& dataSetName, const size_t rank, const size_t* dims, const std::string* buffer, const size_t stride)
 {
 	// Compute bufSize and create charBuf
 	size_t bufSize = 1;
@@ -145,12 +145,12 @@ void XMLWriter::write<std::string>(const std::string& dataSetName, const size_t 
 
 	// Fill charBuf
 	for (size_t i = 0; i < bufSize; ++i)
-		charBuf[i] = buffer[i].c_str();
+		charBuf[i] = buffer[i * stride].c_str();
 
 	_typeName = _typeChar;
-	writeWork<const char_t*>(dataSetName, rank, dims, charBuf);
+	writeWork<const char_t*>(dataSetName, rank, dims, charBuf, 1);
 
-	delete [] charBuf;
+	delete[] charBuf;
 }
 
 
@@ -158,7 +158,13 @@ void XMLWriter::write<std::string>(const std::string& dataSetName, const size_t 
 template <typename T>
 void XMLWriter::write(const std::string& dataSetName, const size_t rank, const size_t* dims, const T* buffer)
 {
-	throw std::invalid_argument("You may not try to write an unsupported type");
+	throw IOException("You may not try to write an unsupported type");
+}
+
+template <typename T>
+void XMLWriter::write(const std::string& dataSetName, const size_t rank, const size_t* dims, const T* buffer, const size_t stride)
+{
+	throw IOException("You may not try to write an unsupported type");
 }
 // ============================================================================================================
 
@@ -169,49 +175,49 @@ void XMLWriter::write(const std::string& dataSetName, const size_t rank, const s
 //   Convenience wrappers
 // ============================================================================================================
 template <typename T>
-void XMLWriter::tensor(const std::string& dataSetName, const size_t rank, const size_t* dims, const std::vector<T>& buffer)
+void XMLWriter::tensor(const std::string& dataSetName, const size_t rank, const size_t* dims, const std::vector<T>& buffer, const size_t stride)
 {
+#ifdef DEBUG
 	size_t bufSize = 1;
 	for (size_t i = 0; i < rank; ++i)
 		bufSize *= dims[i];
-	if (bufSize != buffer.size())
-		throw std::invalid_argument("Tensor dimensions must suit size of given vector");
-	write<T>(dataSetName, rank, dims, &buffer[0]);
+	cadet_assert(bufSize <= buffer.size());
+#endif
+	write<T>(dataSetName, rank, dims, buffer.data(), stride);
 }
 
 template <typename T>
-void XMLWriter::tensor(const std::string& dataSetName, const size_t rank, const size_t* dims, const T* buffer)
+void XMLWriter::tensor(const std::string& dataSetName, const size_t rank, const size_t* dims, const T* buffer, const size_t stride)
 {
-	write<T>(dataSetName, rank, dims, buffer);
+	write<T>(dataSetName, rank, dims, buffer, stride);
 }
 
 template <typename T>
-void XMLWriter::matrix(const std::string& dataSetName, const size_t rows, const size_t cols, const T* buffer)
+void XMLWriter::matrix(const std::string& dataSetName, const size_t rows, const size_t cols, const T* buffer, const size_t stride)
 {
 	size_t dims[2] = {rows, cols};
-	write<T>(dataSetName, 2, dims, buffer);
+	write<T>(dataSetName, 2, dims, buffer, stride);
 }
 
 template <typename T>
-void XMLWriter::matrix(const std::string& dataSetName, const size_t rows, const size_t cols, const std::vector<T>& buffer)
+void XMLWriter::matrix(const std::string& dataSetName, const size_t rows, const size_t cols, const std::vector<T>& buffer, const size_t stride)
 {
-	if (rows*cols not_eq buffer.size())
-		throw std::invalid_argument("Matrix dimensions must suit size of given vector");
+	cadet_assert(rows*cols <= buffer.size());
 	size_t dims[2] = {rows, cols};
-	write<T>(dataSetName, 2, dims, &buffer[0]);
+	write<T>(dataSetName, 2, dims, buffer.data(), stride);
 }
 
 template <typename T>
-void XMLWriter::vector(const std::string& dataSetName, const size_t length, const T* buffer)
+void XMLWriter::vector(const std::string& dataSetName, const size_t length, const T* buffer, const size_t stride)
 {
-	write<T>(dataSetName, 1, &length, buffer);
+	write<T>(dataSetName, 1, &length, buffer, stride);
 }
 
 template <typename T>
-void XMLWriter::vector(const std::string& dataSetName, const std::vector<T>& buffer)
+void XMLWriter::vector(const std::string& dataSetName, const std::vector<T>& buffer, const size_t stride)
 {
-	size_t length = buffer.size();
-	write<T>(dataSetName, 1, &length, &buffer[0]);
+	size_t length = buffer.size() / stride;
+	write<T>(dataSetName, 1, &length, buffer.data(), stride);
 }
 
 template <typename T>
@@ -231,7 +237,7 @@ void XMLWriter::scalar(const std::string& dataSetName, const T buffer)
 
 // This method can only work on template parameters of type: const char_t*, int, unsigned int, double and bool!
 template <typename T>
-void XMLWriter::writeWork(const std::string& dataSetName, const size_t rank, const size_t* dims, const T* buffer)
+void XMLWriter::writeWork(const std::string& dataSetName, const size_t rank, const size_t* dims, const T* buffer, const size_t stride)
 {
 	openGroup(true);
 
@@ -260,8 +266,8 @@ void XMLWriter::writeWork(const std::string& dataSetName, const size_t rank, con
 	// Create the text-string
 	std::ostringstream text_str;
 	for (size_t i = 0; i < bufSize-1; ++i)
-		text_str << std::setprecision(15) << buffer[i] << _textSeparator;
-	text_str << buffer[bufSize-1];
+		text_str << std::setprecision(16) << buffer[i * stride] << _textSeparator;
+	text_str << buffer[bufSize * stride - 1];
 
 	xml_node dataset = _groupOpened.node().find_child_by_attribute(_nodeDset.c_str(), _attrName.c_str(), dataSetName.c_str());
 	if (dataset)

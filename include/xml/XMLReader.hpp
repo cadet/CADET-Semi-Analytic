@@ -1,6 +1,6 @@
 // =============================================================================
 //  CADET-semi-analytic - The semi analytic extension of
-//          CADET - The Chromatography Analysis and Design Toolkit
+//  		CADET - The Chromatography Analysis and Design Toolkit
 //  
 //  Copyright © 2015-2017: Samuel Leweke¹
 //                                      
@@ -10,12 +10,6 @@
 //  are made available under the terms of the GNU Public License v3.0 (or, at
 //  your option, any later version) which accompanies this distribution, and
 //  is available at http://www.gnu.org/licenses/gpl.html
-//
-//  This file is taken from the CADET core project. The authors of this very
-//  file are listed in the copyright notice below:
-//  Copyright © 2008-2015: Eric von Lieres¹, Joel Andersson¹,
-//                         Andreas Puettmann¹, Sebastian Schnittert¹,
-//                         Samuel Leweke¹
 // =============================================================================
 
 #ifndef XMLREADER_HPP_
@@ -23,7 +17,8 @@
 
 #include "XMLBase.hpp"
 
-namespace casema {
+namespace casema 
+{
 
 using namespace pugi;
 
@@ -52,15 +47,9 @@ private:
 };
 
 
+XMLReader::XMLReader() { }
 
-
-// ====================================================================================================================
-//   IMPLEMENTATION PART
-// ====================================================================================================================
-
-XMLReader::XMLReader() {}
-
-XMLReader::~XMLReader() {}
+XMLReader::~XMLReader() { }
 
 
 
@@ -74,11 +63,17 @@ std::vector<double> XMLReader::vector<double>(const std::string& dataSetName)
 	return read<double>(dataSetName);
 }
 
-// Integer specialization of vector()
+// Integer specializations of vector()
 template <>
 std::vector<int> XMLReader::vector<int>(const std::string& dataSetName)
 {
 	return read<int>(dataSetName);
+}
+
+template <>
+std::vector<uint64_t> XMLReader::vector<uint64_t>(const std::string& dataSetName)
+{
+	return read<uint64_t>(dataSetName);
 }
 
 // std::string specialization of vector()
@@ -92,7 +87,7 @@ std::vector<std::string> XMLReader::vector<std::string>(const std::string& dataS
 template <typename T>
 std::vector<T> XMLReader::vector(const std::string& dataSetName)
 {
-	throw std::invalid_argument("You may not try to read an unsupported type");
+	throw IOException("You may not try to read an unsupported type");
 }
 // ============================================================================================================
 
@@ -116,7 +111,7 @@ std::vector<T> XMLReader::read(const std::string& dataSetName)
 	{
 		std::ostringstream oss;
 		oss << "Dataset '" << dataSetName << "' does not exist!";
-		throw std::invalid_argument(oss.str());
+		throw IOException(oss.str());
 	}
 
 	// Read text and attributes
@@ -130,7 +125,7 @@ std::vector<T> XMLReader::read(const std::string& dataSetName)
 	size_t bufSize = 1;
 	for (size_t i = 0; i < rank; ++i)
 	{
-		std::stringstream ss(dims_vec.at(i));
+		std::stringstream ss(dims_vec[i]);
 		ss >> dims[i];
 		bufSize *= dims[i];
 	}
@@ -142,20 +137,19 @@ std::vector<T> XMLReader::read(const std::string& dataSetName)
 	{
 		std::ostringstream oss;
 		oss << "XML file is inconsistent: Possibly wrong no. of entrys in dataset '" << dataset.attribute(_attrName.c_str()).value() << "'";
-		throw std::invalid_argument(oss.str());
+		throw IOException(oss.str());
 	}
 
 	std::vector<T> data(bufSize);
 	for (size_t i = 0; i < bufSize; ++i)
 	{
-		std::stringstream ss(data_vec.at(i));
-		ss >> data.at(i);
+		std::stringstream ss(data_vec[i]);
+		ss >> data[i];
 	}
 
 	closeGroup();
 	return data;
 }
-
 
 } // namespace casema
 
