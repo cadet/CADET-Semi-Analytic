@@ -183,35 +183,35 @@ namespace casema
 			return curCenter;
 		}
 
-	    std::size_t i;
-	    std::vector<std::size_t> bitpos(mustAgree + 1, 0);
+		std::size_t i;
+		std::vector<std::size_t> bitpos(mustAgree + 1, 0);
 
-	    // Seed with the lowest word plus a sentinel
-	    for(i = 0; i < mustAgree; ++i)
-	        bitpos[i] = i;
-	    bitpos[i] = 0;
+		// Seed with the lowest word plus a sentinel
+		for(i = 0; i < mustAgree; ++i)
+			bitpos[i] = i;
+		bitpos[i] = 0;
 
-	    real_t curCenter;
-	    real_t curRadius = std::numeric_limits<real_t>::max();
+		real_t curCenter;
+		real_t curRadius = std::numeric_limits<real_t>::max();
 
-	    do {
-	        real_t centerCand;
-	        real_t radiusCand;
-	        detail::enclosingInterval(ests, bitpos, centerCand, radiusCand);
+		do {
+			real_t centerCand;
+			real_t radiusCand;
+			detail::enclosingInterval(ests, bitpos, centerCand, radiusCand);
 
-	        if (radiusCand < curRadius)
-	        {
-	        	curRadius = radiusCand;
-	        	curCenter = centerCand;
-	        }
+			if (radiusCand < curRadius)
+			{
+				curRadius = radiusCand;
+				curCenter = centerCand;
+			}
 
-	        // Increment the least-significant series of consecutive bits
-	        for(i = 0; bitpos[i + 1] == bitpos[i] + 1; ++i)
-	            bitpos[i] = i;
-	    } while(++bitpos[i] != ests.size());
+			// Increment the least-significant series of consecutive bits
+			for(i = 0; bitpos[i + 1] == bitpos[i] + 1; ++i)
+				bitpos[i] = i;
+		} while(++bitpos[i] != ests.size());
 
-	    if (radius) 
-	    	*radius = curRadius;
+		if (radius)
+			*radius = curRadius;
 		return curCenter;
 	}
 
@@ -273,7 +273,7 @@ namespace casema
 			std::ostringstream oss;
 			if (_methods.size() > 0)
 			{
-	            oss << "{" << _methods[0]->name();
+				oss << "{" << _methods[0]->name();
 
 				for (const_iterator it = _methods.begin() + 1; it != _methods.end(); ++it)
 					oss << ", " << (*it)->name();

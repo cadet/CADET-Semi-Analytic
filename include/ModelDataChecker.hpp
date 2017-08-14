@@ -25,24 +25,24 @@ namespace casema
 	template <typename real_t>
 	bool checkModelForCompatibility(const ModelData<real_t>& model)
 	{
-	    if (model.nComponents != 1)
-	    {
-	        std::cout << "ERROR: Only single component models allowed" << std::endl;
-	        return false;
-	    }
+		if (model.nComponents != 1)
+		{
+			std::cout << "ERROR: Only single component models allowed" << std::endl;
+			return false;
+		}
 
-	    if ((model.initialLiquidConcentration[0] != real_t(0)) || (model.initialSolidConcentration[0] != real_t(0)))
-	    {
-	        std::cout << "ERROR: Initial concentrations must be 0.0" << std::endl;
-	        return false;
-	    }
+		if ((model.initialLiquidConcentration[0] != real_t(0)) || (model.initialSolidConcentration[0] != real_t(0)))
+		{
+			std::cout << "ERROR: Initial concentrations must be 0.0" << std::endl;
+			return false;
+		}
 
-	    if (model.bindingModel != casema::LINEAR)
-	    {
-	        std::cout << "ERROR: Only linear binding model allowed" << std::endl;
-	        return false;
-	    }
-	    return true;
+		if (model.bindingModel != casema::LINEAR)
+		{
+			std::cout << "ERROR: Only linear binding model allowed" << std::endl;
+			return false;
+		}
+		return true;
 	}
 
 }

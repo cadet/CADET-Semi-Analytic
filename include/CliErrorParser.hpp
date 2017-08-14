@@ -19,60 +19,60 @@
 
 namespace casema
 {
-    template <typename real_t, template <class T> class Opts_t, template <class T> class Model_t>
-    bool processErrorOptions(Opts_t<real_t>& opts, const Model_t<real_t>& model, const real_t& T)
-    {
-        // If summands and abscissa are given, use them
-        if ((opts.sigma > 0) && (opts.summands > 0))
-        {
-            opts.errorCons = casema::consistencyError(opts.sigma, T, model);
-            opts.errorTrunc = casema::truncationError(opts.sigma, opts.summands, T, model);
-            opts.error = opts.errorCons + opts.errorTrunc;
-            opts.errorWeight = 0.5;
-        }
-        else if ((opts.errorWeight > 0) && (opts.errorWeight < 1) && (opts.error > 0))
-        {
-            if (opts.sigma > 0)
-                casema::paramsFromError(opts.sigma, T, model, opts.errorWeight, opts.error, opts.sigma, opts.summands);
-            else
-                casema::paramsFromError(mpfr::mpreal(0), T, model, opts.errorWeight, opts.error, opts.sigma, opts.summands);
+	template <typename real_t, template <class T> class Opts_t, template <class T> class Model_t>
+	bool processErrorOptions(Opts_t<real_t>& opts, const Model_t<real_t>& model, const real_t& T)
+	{
+		// If summands and abscissa are given, use them
+		if ((opts.sigma > 0) && (opts.summands > 0))
+		{
+			opts.errorCons = casema::consistencyError(opts.sigma, T, model);
+			opts.errorTrunc = casema::truncationError(opts.sigma, opts.summands, T, model);
+			opts.error = opts.errorCons + opts.errorTrunc;
+			opts.errorWeight = 0.5;
+		}
+		else if ((opts.errorWeight > 0) && (opts.errorWeight < 1) && (opts.error > 0))
+		{
+			if (opts.sigma > 0)
+				casema::paramsFromError(opts.sigma, T, model, opts.errorWeight, opts.error, opts.sigma, opts.summands);
+			else
+				casema::paramsFromError(mpfr::mpreal(0), T, model, opts.errorWeight, opts.error, opts.sigma, opts.summands);
 
-            opts.errorCons = casema::consistencyError(opts.sigma, T, model);
-            opts.errorTrunc = casema::truncationError(opts.sigma, opts.summands, T, model);
-        }
-        else
-            return false;
+			opts.errorCons = casema::consistencyError(opts.sigma, T, model);
+			opts.errorTrunc = casema::truncationError(opts.sigma, opts.summands, T, model);
+		}
+		else
+			return false;
 
-        return true;
-    }
+		return true;
+	}
 
 
-    template <typename real_t, template <class T> class Opts_t, template <class T> class Model_t>
-    bool processErrorOptions(Opts_t<real_t>& opts, const Model_t<real_t>& model)
-    {
-        // If summands and abscissa are given, use them
-        if ((opts.sigma > 0) && (opts.summands > 0))
-        {
-            opts.errorCons = casema::consistencyError(opts.sigma, model);
-            opts.errorTrunc = casema::truncationError(opts.sigma, opts.summands, model);
-            opts.error = opts.errorCons + opts.errorTrunc;
-            opts.errorWeight = 0.5;
-        }
-        else if ((opts.errorWeight > 0) && (opts.errorWeight < 1) && (opts.error > 0))
-        {
-            if (opts.sigma > 0)
-                casema::paramsFromError(opts.sigma, model, opts.errorWeight, opts.error, opts.sigma, opts.summands);
-            else
-                casema::paramsFromError(mpfr::mpreal(0), model, opts.errorWeight, opts.error, opts.sigma, opts.summands);
+	template <typename real_t, template <class T> class Opts_t, template <class T> class Model_t>
+	bool processErrorOptions(Opts_t<real_t>& opts, const Model_t<real_t>& model)
+	{
+		// If summands and abscissa are given, use them
+		if ((opts.sigma > 0) && (opts.summands > 0))
+		{
+			opts.errorCons = casema::consistencyError(opts.sigma, model);
+			opts.errorTrunc = casema::truncationError(opts.sigma, opts.summands, model);
+			opts.error = opts.errorCons + opts.errorTrunc;
+			opts.errorWeight = 0.5;
+		}
+		else if ((opts.errorWeight > 0) && (opts.errorWeight < 1) && (opts.error > 0))
+		{
+			if (opts.sigma > 0)
+				casema::paramsFromError(opts.sigma, model, opts.errorWeight, opts.error, opts.sigma, opts.summands);
+			else
+				casema::paramsFromError(mpfr::mpreal(0), model, opts.errorWeight, opts.error, opts.sigma, opts.summands);
 
-            opts.errorCons = casema::consistencyError(opts.sigma, model);
-            opts.errorTrunc = casema::truncationError(opts.sigma, opts.summands, model);
-        }
-        else
-            return false;
+			opts.errorCons = casema::consistencyError(opts.sigma, model);
+			opts.errorTrunc = casema::truncationError(opts.sigma, opts.summands, model);
+		}
+		else
+			return false;
 
-        return true;
-    }
+		return true;
+	}
 }
 
 #endif

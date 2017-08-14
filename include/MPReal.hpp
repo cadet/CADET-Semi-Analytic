@@ -21,26 +21,26 @@
 template <typename real_t>
 inline real_t machineEpsilon(const real_t& v)
 {
-    return std::numeric_limits<real_t>::epsilon(v);
+	return std::numeric_limits<real_t>::epsilon(v);
 }
 
 template <>
 inline double machineEpsilon(const double& v)
 {
-    union helper_t
-    {
-        long long i64;
-        double d64;
-    } s;
+	union helper_t
+	{
+		long long i64;
+		double d64;
+	} s;
 
-    s.d64 = v;
-    s.i64++;
-    return (s.i64 < 0 ? v - s.d64 : s.d64 - v);
+	s.d64 = v;
+	s.i64++;
+	return (s.i64 < 0 ? v - s.d64 : s.d64 - v);
 }
 
 namespace std
 {
-    using mpfr::abs;
+	using mpfr::abs;
 }
 
 #endif

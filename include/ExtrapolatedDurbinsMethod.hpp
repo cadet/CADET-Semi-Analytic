@@ -56,229 +56,229 @@ namespace casema
 		template <class lapFunc_t>
 		std::vector<real_t> invertSingle(const std::vector<real_t>& timeGrid, const std::size_t timeOffset, const lapFunc_t& f, real_t* const radius, std::size_t* const iterations) const
 		{
-	        const real_t T = _tMax / real_t(2) * real_t(1.01);
-	        
-	        const real_t f0 = f(complex_t(_sigma)).real() / real_t(2);
-	        std::vector<complex_t> funcEvals(_summands);
-	        std::vector<real_t> result(timeGrid.size() - timeOffset);
+			const real_t T = _tMax / real_t(2) * real_t(1.01);
+			
+			const real_t f0 = f(complex_t(_sigma)).real() / real_t(2);
+			std::vector<complex_t> funcEvals(_summands);
+			std::vector<real_t> result(timeGrid.size() - timeOffset);
 
-	        #pragma omp parallel
-	        {
-	        	Constants<real_t>::init(_precision);
-	        	auto sinExtrapolator = ExtrapolationPolicy::initializeThreaded(_summands);
-	        	auto cosExtrapolator = ExtrapolationPolicy::initializeThreaded(_summands);
+			#pragma omp parallel
+			{
+				Constants<real_t>::init(_precision);
+				auto sinExtrapolator = ExtrapolationPolicy::initializeThreaded(_summands);
+				auto cosExtrapolator = ExtrapolationPolicy::initializeThreaded(_summands);
 
-	        	const real_t zero(0);
-	        	const real_t pit = Constants<real_t>::pi() / T;
+				const real_t zero(0);
+				const real_t pit = Constants<real_t>::pi() / T;
 
-	        	#pragma omp single nowait
-	        	{
-	        		std::cout << "Evaluate Laplace solution at " << _summands << " points" << std::endl;
-	        	}
+				#pragma omp single nowait
+				{
+					std::cout << "Evaluate Laplace solution at " << _summands << " points" << std::endl;
+				}
 
-	        	#pragma omp for schedule(static)
-		        for (std::size_t k = 1; k <= _summands; ++k)
-		        {
-		        	const real_t kpit = k * Constants<real_t>::pi() / T;
-		        	funcEvals[k-1] = f(_sigma + complex_t(zero, kpit));
-		        }
+				#pragma omp for schedule(static)
+				for (std::size_t k = 1; k <= _summands; ++k)
+				{
+					const real_t kpit = k * Constants<real_t>::pi() / T;
+					funcEvals[k-1] = f(_sigma + complex_t(zero, kpit));
+				}
 
-	        	#pragma omp single nowait
-	        	{
-	        		std::cout << "Evaluate Fourier series for " << (timeGrid.size() - timeOffset) << " time points" << std::endl;
-	        	}
+				#pragma omp single nowait
+				{
+					std::cout << "Evaluate Fourier series for " << (timeGrid.size() - timeOffset) << " time points" << std::endl;
+				}
 
-		        #pragma omp for schedule(static)
-		        for (std::size_t i = 0; i < timeGrid.size()-timeOffset; ++i)
-		        {
-		        	const std::size_t timeIdx = i+timeOffset;
-		        	result[i] = f0;
+				#pragma omp for schedule(static)
+				for (std::size_t i = 0; i < timeGrid.size()-timeOffset; ++i)
+				{
+					const std::size_t timeIdx = i+timeOffset;
+					result[i] = f0;
 
-		        	// Extrapolate cos terms
-		        	HookingPolicy<real_t>::loopStartHook(false);
+					// Extrapolate cos terms
+					HookingPolicy<real_t>::loopStartHook(false);
 
-		        	real_t cosSeriesVal = 0;
-		        	real_t sinSeriesVal = 0;
-		        	real_t cosLimit = 0;
-		        	real_t sinLimit = 0;
-		        	sinExtrapolator->reset();
-		        	cosExtrapolator->reset();
+					real_t cosSeriesVal = 0;
+					real_t sinSeriesVal = 0;
+					real_t cosLimit = 0;
+					real_t sinLimit = 0;
+					sinExtrapolator->reset();
+					cosExtrapolator->reset();
 
 #ifdef CASEMA_KAHAN_SUMMATION
-		        	real_t cosRunningError = 0;
-		        	real_t cosTemp;
-		        	real_t cosDiff;
+					real_t cosRunningError = 0;
+					real_t cosTemp;
+					real_t cosDiff;
 
-		        	real_t sinRunningError = 0;
-		        	real_t sinTemp;
-		        	real_t sinDiff;
+					real_t sinRunningError = 0;
+					real_t sinTemp;
+					real_t sinDiff;
 #endif
 
 					const real_t factor = exp(_sigma * timeGrid[timeIdx]) / T;
 
-		        	for (std::size_t k = 1; k <= _summands; ++k)
-		        	{
-		        		const real_t kpit = k * pit;
+					for (std::size_t k = 1; k <= _summands; ++k)
+					{
+						const real_t kpit = k * pit;
 
-		        		const bool cosConv = ExtrapolationPolicy::converged(cosExtrapolator);
-		        		const bool sinConv = ExtrapolationPolicy::converged(sinExtrapolator);
+						const bool cosConv = ExtrapolationPolicy::converged(cosExtrapolator);
+						const bool sinConv = ExtrapolationPolicy::converged(sinExtrapolator);
 
-		        		if (!cosConv || (k <= _minSummands))
-		        		{
+						if (!cosConv || (k <= _minSummands))
+						{
 #ifdef CASEMA_KAHAN_SUMMATION
-			        		// Kahan summation
-			        		cosDiff = cos(kpit * timeGrid[timeIdx]) * funcEvals[k-1].real();
-			        		cosDiff -= cosRunningError;
-			        		cosTemp = cosSeriesVal;
-			        		cosTemp += cosDiff;
-			        		cosRunningError = cosTemp;
-			        		cosRunningError -= cosSeriesVal;
-			        		cosRunningError -= cosDiff;
-			        		cosSeriesVal = std::move(cosTemp); 
+							// Kahan summation
+							cosDiff = cos(kpit * timeGrid[timeIdx]) * funcEvals[k-1].real();
+							cosDiff -= cosRunningError;
+							cosTemp = cosSeriesVal;
+							cosTemp += cosDiff;
+							cosRunningError = cosTemp;
+							cosRunningError -= cosSeriesVal;
+							cosRunningError -= cosDiff;
+							cosSeriesVal = std::move(cosTemp); 
 #else
-			        		cosSeriesVal += cos(kpit * timeGrid[timeIdx]) * funcEvals[k-1].real();
+							cosSeriesVal += cos(kpit * timeGrid[timeIdx]) * funcEvals[k-1].real();
 #endif
-			        		cosLimit = cosExtrapolator->nextPoint(cosSeriesVal, real_t(1) / real_t(k));
-		        		}
-		        		if (!sinConv || (k <= _minSummands))
-		        		{
+							cosLimit = cosExtrapolator->nextPoint(cosSeriesVal, real_t(1) / real_t(k));
+						}
+						if (!sinConv || (k <= _minSummands))
+						{
 #ifdef CASEMA_KAHAN_SUMMATION
-			        		// Kahan summation
-			        		sinDiff = sin(kpit * timeGrid[timeIdx]) * funcEvals[k-1].imag();
-			        		sinDiff -= sinRunningError;
-			        		sinTemp = sinSeriesVal;
-			        		sinTemp += sinDiff;
-			        		sinRunningError = sinTemp;
-			        		sinRunningError -= sinSeriesVal;
-			        		sinRunningError -= sinDiff;
-			        		sinSeriesVal = std::move(sinTemp); 
+							// Kahan summation
+							sinDiff = sin(kpit * timeGrid[timeIdx]) * funcEvals[k-1].imag();
+							sinDiff -= sinRunningError;
+							sinTemp = sinSeriesVal;
+							sinTemp += sinDiff;
+							sinRunningError = sinTemp;
+							sinRunningError -= sinSeriesVal;
+							sinRunningError -= sinDiff;
+							sinSeriesVal = std::move(sinTemp); 
 #else
-			        		sinSeriesVal += sin(kpit * timeGrid[timeIdx]) * funcEvals[k-1].imag();
+							sinSeriesVal += sin(kpit * timeGrid[timeIdx]) * funcEvals[k-1].imag();
 #endif
-			        		sinLimit = sinExtrapolator->nextPoint(sinSeriesVal, real_t(1) / real_t(k));
-		        		}
+							sinLimit = sinExtrapolator->nextPoint(sinSeriesVal, real_t(1) / real_t(k));
+						}
 
-		        		HookingPolicy<real_t>::loopHook(k, cosSeriesVal, cosLimit, sinSeriesVal, sinLimit, f0, factor, cosConv, sinConv);
+						HookingPolicy<real_t>::loopHook(k, cosSeriesVal, cosLimit, sinSeriesVal, sinLimit, f0, factor, cosConv, sinConv);
 
-		        		if (cosConv && sinConv && (k > _minSummands))
-		        			break;
-		        	}
+						if (cosConv && sinConv && (k > _minSummands))
+							break;
+					}
 
-		        	// Combine results to final value
-		        	result[i] += cosLimit - sinLimit;
-		        	result[i] *= factor;
+					// Combine results to final value
+					result[i] += cosLimit - sinLimit;
+					result[i] *= factor;
 
-		        	// Calculate precision estimate
-		        	if (radius)
-		        		radius[i] = factor * (ExtrapolationPolicy::radius(cosExtrapolator) + ExtrapolationPolicy::radius(sinExtrapolator));
+					// Calculate precision estimate
+					if (radius)
+						radius[i] = factor * (ExtrapolationPolicy::radius(cosExtrapolator) + ExtrapolationPolicy::radius(sinExtrapolator));
 
-		        	if (iterations)
-		        		iterations[i] = std::max(sinExtrapolator->iterations(), cosExtrapolator->iterations());
-		        }
+					if (iterations)
+						iterations[i] = std::max(sinExtrapolator->iterations(), cosExtrapolator->iterations());
+				}
 
-		        ExtrapolationPolicy::cleanUpThreaded(cosExtrapolator);
-		        ExtrapolationPolicy::cleanUpThreaded(sinExtrapolator);
-		        Constants<real_t>::clear();
-	        }
-	        return result;
+				ExtrapolationPolicy::cleanUpThreaded(cosExtrapolator);
+				ExtrapolationPolicy::cleanUpThreaded(sinExtrapolator);
+				Constants<real_t>::clear();
+			}
+			return result;
 		}
 
 		template <class lapFunc_t>
 		std::vector<real_t> invertCombined(const std::vector<real_t>& timeGrid, const std::size_t timeOffset, const lapFunc_t& f, real_t* const radius, std::size_t* const iterations) const
 		{
-	        const real_t T = _tMax / real_t(2) * real_t(1.01);
-	        
-	        const real_t f0 = f(complex_t(_sigma)).real() / real_t(2);
-	        std::vector<complex_t> funcEvals(_summands);
-	        std::vector<real_t> result(timeGrid.size() - timeOffset);
+			const real_t T = _tMax / real_t(2) * real_t(1.01);
+			
+			const real_t f0 = f(complex_t(_sigma)).real() / real_t(2);
+			std::vector<complex_t> funcEvals(_summands);
+			std::vector<real_t> result(timeGrid.size() - timeOffset);
 
-	        #pragma omp parallel
-	        {
-	        	Constants<real_t>::init(_precision);
-	        	auto extrapolator = ExtrapolationPolicy::initializeThreaded(_summands);
+			#pragma omp parallel
+			{
+				Constants<real_t>::init(_precision);
+				auto extrapolator = ExtrapolationPolicy::initializeThreaded(_summands);
 
-	        	const real_t zero(0);
-	        	const real_t pit = Constants<real_t>::pi() / T;
+				const real_t zero(0);
+				const real_t pit = Constants<real_t>::pi() / T;
 
-	        	#pragma omp single nowait
-	        	{
-	        		std::cout << "Evaluate Laplace solution at " << _summands << " points" << std::endl;
-	        	}
+				#pragma omp single nowait
+				{
+					std::cout << "Evaluate Laplace solution at " << _summands << " points" << std::endl;
+				}
 
-	        	#pragma omp for schedule(static)
-		        for (std::size_t k = 1; k <= _summands; ++k)
-		        {
-		        	const real_t kpit = k * Constants<real_t>::pi() / T;
-		        	funcEvals[k-1] = f(_sigma + complex_t(zero, kpit));
-		        }
+				#pragma omp for schedule(static)
+				for (std::size_t k = 1; k <= _summands; ++k)
+				{
+					const real_t kpit = k * Constants<real_t>::pi() / T;
+					funcEvals[k-1] = f(_sigma + complex_t(zero, kpit));
+				}
 
-	        	#pragma omp single nowait
-	        	{
-	        		std::cout << "Evaluate Fourier series for " << (timeGrid.size() - timeOffset) << " time points" << std::endl;
-	        	}
+				#pragma omp single nowait
+				{
+					std::cout << "Evaluate Fourier series for " << (timeGrid.size() - timeOffset) << " time points" << std::endl;
+				}
 
-		        #pragma omp for schedule(static)
-		        for (std::size_t i = 0; i < timeGrid.size()-timeOffset; ++i)
-		        {
-		        	const std::size_t timeIdx = i+timeOffset;
-		        	result[i] = f0;
+				#pragma omp for schedule(static)
+				for (std::size_t i = 0; i < timeGrid.size()-timeOffset; ++i)
+				{
+					const std::size_t timeIdx = i+timeOffset;
+					result[i] = f0;
 
-		        	// Extrapolate
-		        	HookingPolicy<real_t>::loopStartHook(true);
+					// Extrapolate
+					HookingPolicy<real_t>::loopStartHook(true);
 
-		        	real_t seriesVal = 0;
-		        	real_t limit = 0;
-		        	extrapolator->reset();
-		        	const real_t factor = exp(_sigma * timeGrid[timeIdx]) / T;
+					real_t seriesVal = 0;
+					real_t limit = 0;
+					extrapolator->reset();
+					const real_t factor = exp(_sigma * timeGrid[timeIdx]) / T;
 
 #ifdef CASEMA_KAHAN_SUMMATION
-		        	real_t runningError = 0;
-		        	real_t temp;
-		        	real_t diff;
+					real_t runningError = 0;
+					real_t temp;
+					real_t diff;
 #endif
 
-		        	for (std::size_t k = 1; k <= _summands; ++k)
-		        	{
-		        		const real_t kpit = k * pit;
+					for (std::size_t k = 1; k <= _summands; ++k)
+					{
+						const real_t kpit = k * pit;
 
 #ifdef CASEMA_KAHAN_SUMMATION
-		        		// Kahan summation
-		        		diff = cos(kpit * timeGrid[timeIdx]) * funcEvals[k-1].real() - sin(kpit * timeGrid[timeIdx]) * funcEvals[k-1].imag();
-		        		diff -= runningError;
-		        		temp = seriesVal;
-		        		temp += diff;
-		        		runningError = temp;
-		        		runningError -= seriesVal;
-		        		runningError -= diff;
-		        		seriesVal = std::move(temp); 
+						// Kahan summation
+						diff = cos(kpit * timeGrid[timeIdx]) * funcEvals[k-1].real() - sin(kpit * timeGrid[timeIdx]) * funcEvals[k-1].imag();
+						diff -= runningError;
+						temp = seriesVal;
+						temp += diff;
+						runningError = temp;
+						runningError -= seriesVal;
+						runningError -= diff;
+						seriesVal = std::move(temp); 
 #else
-		        		seriesVal += cos(kpit * timeGrid[timeIdx]) * funcEvals[k-1].real() - sin(kpit * timeGrid[timeIdx]) * funcEvals[k-1].imag();
+						seriesVal += cos(kpit * timeGrid[timeIdx]) * funcEvals[k-1].real() - sin(kpit * timeGrid[timeIdx]) * funcEvals[k-1].imag();
 #endif
-		        		limit = extrapolator->nextPoint(seriesVal, real_t(1) / real_t(k));
+						limit = extrapolator->nextPoint(seriesVal, real_t(1) / real_t(k));
 
-		        		HookingPolicy<real_t>::loopHook(k, seriesVal, limit, f0, factor);
+						HookingPolicy<real_t>::loopHook(k, seriesVal, limit, f0, factor);
 
-		        		if (ExtrapolationPolicy::converged(extrapolator) && (k > _minSummands))
-		        			break;
-		        	}
-		        	const real_t rad = ExtrapolationPolicy::radius(extrapolator);
+						if (ExtrapolationPolicy::converged(extrapolator) && (k > _minSummands))
+							break;
+					}
+					const real_t rad = ExtrapolationPolicy::radius(extrapolator);
 
-		        	// Combine results to final value
-		        	result[i] += limit;
-		        	result[i] *= factor;
+					// Combine results to final value
+					result[i] += limit;
+					result[i] *= factor;
 
-		        	if (iterations)
-		        		iterations[i] = extrapolator->iterations();
+					if (iterations)
+						iterations[i] = extrapolator->iterations();
 
-		        	// Calculate precision estimate
-		        	if (radius)
-		        		radius[i] = factor * rad;
-		        }
+					// Calculate precision estimate
+					if (radius)
+						radius[i] = factor * rad;
+				}
 
-		        ExtrapolationPolicy::cleanUpThreaded(extrapolator);
-		        Constants<real_t>::clear();
-	        }
-	        return result;
+				ExtrapolationPolicy::cleanUpThreaded(extrapolator);
+				Constants<real_t>::clear();
+			}
+			return result;
 		}
 
 	protected:
@@ -297,10 +297,10 @@ namespace casema
 
 		struct ExtrapolatorOptions
 		{
-		    std::size_t convTimes;
-		    real_t convThreshold;
-		    std::size_t consAgree;
-		    std::string extraMethods;
+			std::size_t convTimes;
+			real_t convThreshold;
+			std::size_t consAgree;
+			std::string extraMethods;
 		};
 
 		template <typename Options_t>
@@ -330,9 +330,9 @@ namespace casema
 
 		casema::ConsensusEstimator<real_t>* initializeThreaded(std::size_t summands) const
 		{
-		    casema::ConsensusEstimator<real_t>* estimator = new casema::ConsensusEstimator<real_t>();
-		    casema::addExtrapolationMethods(_opts.extraMethods, *estimator, _opts);
-		    return estimator;
+			casema::ConsensusEstimator<real_t>* estimator = new casema::ConsensusEstimator<real_t>();
+			casema::addExtrapolationMethods(_opts.extraMethods, *estimator, _opts);
+			return estimator;
 		}
 
 		void cleanUpThreaded(casema::ConsensusEstimator<real_t>* const estimator) const
@@ -358,9 +358,9 @@ namespace casema
 
 		struct ExtrapolatorOptions
 		{
-		    std::size_t convTimes;
-		    real_t convThresholdAbs;
-		    real_t convThresholdRel;
+			std::size_t convTimes;
+			real_t convThresholdAbs;
+			real_t convThresholdRel;
 		};
 
 		template <typename Options_t>
@@ -389,11 +389,11 @@ namespace casema
 
 		casema::ConvergenceMonitor<real_t, Extrapolator_t>* initializeThreaded(std::size_t summands) const
 		{
-		    casema::ConvergenceMonitor<real_t, Extrapolator_t>* estimator = new casema::ConvergenceMonitor<real_t, Extrapolator_t>();
-		    estimator->thresholdAbs(_opts.convThresholdAbs);
-		    estimator->thresholdRel(_opts.convThresholdRel);
-		    estimator->times(_opts.convTimes);
-		    return estimator;
+			casema::ConvergenceMonitor<real_t, Extrapolator_t>* estimator = new casema::ConvergenceMonitor<real_t, Extrapolator_t>();
+			estimator->thresholdAbs(_opts.convThresholdAbs);
+			estimator->thresholdRel(_opts.convThresholdRel);
+			estimator->times(_opts.convTimes);
+			return estimator;
 		}
 
 		void cleanUpThreaded(casema::ConvergenceMonitor<real_t, Extrapolator_t>* const estimator) const

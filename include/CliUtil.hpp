@@ -20,24 +20,24 @@
 
 namespace TCLAP
 {
-    // Enable TCLAP support of mpreal datatypes
-    template<>
-    struct ArgTraits<mpfr::mpreal>
-    {
-        typedef StringLike ValueCategory;
-    };
-    
-    template<>
-    void SetString(mpfr::mpreal &dst, const std::string &src)
-    {
-        const std::size_t prec = mpfr::mpreal::get_default_prec();
-        const std::size_t inprec = mpfr::digits2bits(src.size()+2);
-        
-        mpfr::mpreal x(0, std::max(prec, inprec));
-        mpfr_strtofr (x.mpfr_ptr(), src.c_str(), 0, 10, mpfr::mpreal::get_default_rnd());
+	// Enable TCLAP support of mpreal datatypes
+	template<>
+	struct ArgTraits<mpfr::mpreal>
+	{
+		typedef StringLike ValueCategory;
+	};
+	
+	template<>
+	void SetString(mpfr::mpreal &dst, const std::string &src)
+	{
+		const std::size_t prec = mpfr::mpreal::get_default_prec();
+		const std::size_t inprec = mpfr::digits2bits(src.size()+2);
+		
+		mpfr::mpreal x(0, std::max(prec, inprec));
+		mpfr_strtofr (x.mpfr_ptr(), src.c_str(), 0, 10, mpfr::mpreal::get_default_rnd());
 
-        dst = x;
-    }
+		dst = x;
+	}
 }
 
 #endif

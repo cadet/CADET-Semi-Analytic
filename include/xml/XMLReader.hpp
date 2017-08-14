@@ -30,24 +30,24 @@ using namespace pugi;
 class XMLReader : public XMLBase
 {
 public:
-    /// \brief Constructor
-    XMLReader();
+	/// \brief Constructor
+	XMLReader();
 
-    /// \brief Destructor
-    ~XMLReader();
+	/// \brief Destructor
+	~XMLReader();
 
-    /// \brief Convenience wrapper for reading vectors
-    template <typename T>
-    std::vector<T> vector(const std::string& dataSetName);
+	/// \brief Convenience wrapper for reading vectors
+	template <typename T>
+	std::vector<T> vector(const std::string& dataSetName);
 
-    /// \brief Convenience wrapper for reading scalars
-    template <typename T>
-    T scalar(const std::string& dataSetName, size_t position = 0);
+	/// \brief Convenience wrapper for reading scalars
+	template <typename T>
+	T scalar(const std::string& dataSetName, size_t position = 0);
 
 private:
 
-    template <typename T>
-    std::vector<T> read(const std::string& dataSetName);
+	template <typename T>
+	std::vector<T> read(const std::string& dataSetName);
 
 };
 
@@ -71,28 +71,28 @@ XMLReader::~XMLReader() {}
 template <>
 std::vector<double> XMLReader::vector<double>(const std::string& dataSetName)
 {
-    return read<double>(dataSetName);
+	return read<double>(dataSetName);
 }
 
 // Integer specialization of vector()
 template <>
 std::vector<int> XMLReader::vector<int>(const std::string& dataSetName)
 {
-    return read<int>(dataSetName);
+	return read<int>(dataSetName);
 }
 
 // std::string specialization of vector()
 template <>
 std::vector<std::string> XMLReader::vector<std::string>(const std::string& dataSetName)
 {
-    return read<std::string>(dataSetName);
+	return read<std::string>(dataSetName);
 }
 
 // Template that matches on every unsupported type and throws an exception
 template <typename T>
 std::vector<T> XMLReader::vector(const std::string& dataSetName)
 {
-    throw std::invalid_argument("You may not try to read an unsupported type");
+	throw std::invalid_argument("You may not try to read an unsupported type");
 }
 // ============================================================================================================
 
@@ -101,59 +101,59 @@ std::vector<T> XMLReader::vector(const std::string& dataSetName)
 template <typename T>
 T XMLReader::scalar(const std::string& dataSetName, size_t position)
 {
-    return vector<T>(dataSetName).at(position);
+	return vector<T>(dataSetName).at(position);
 }
 
 
 template <typename T>
 std::vector<T> XMLReader::read(const std::string& dataSetName)
 {
-    openGroup();
+	openGroup();
 
-    // Open dataset and throw if it does not exist
-    xml_node dataset = _groupOpened.node().find_child_by_attribute(_nodeDset.c_str(), _attrName.c_str(), dataSetName.c_str());
-    if (!dataset)
-    {
-        std::ostringstream oss;
-        oss << "Dataset '" << dataSetName << "' does not exist!";
-        throw std::invalid_argument(oss.str());
-    }
+	// Open dataset and throw if it does not exist
+	xml_node dataset = _groupOpened.node().find_child_by_attribute(_nodeDset.c_str(), _attrName.c_str(), dataSetName.c_str());
+	if (!dataset)
+	{
+		std::ostringstream oss;
+		oss << "Dataset '" << dataSetName << "' does not exist!";
+		throw std::invalid_argument(oss.str());
+	}
 
-    // Read text and attributes
-    std::string data_str = dataset.text().get();
-    size_t rank          = dataset.attribute(_attrRank.c_str()).as_int();
-    std::string dims_str = dataset.attribute(_attrDims.c_str()).value();
+	// Read text and attributes
+	std::string data_str = dataset.text().get();
+	size_t rank          = dataset.attribute(_attrRank.c_str()).as_int();
+	std::string dims_str = dataset.attribute(_attrDims.c_str()).value();
 
-    // Get dims and compute buffer size
-    std::vector<std::string> dims_vec = split(dims_str, _dimsSeparator.c_str());
-    size_t* dims = new size_t[rank];
-    size_t bufSize = 1;
-    for (size_t i = 0; i < rank; ++i)
-    {
-        std::stringstream ss(dims_vec.at(i));
-        ss >> dims[i];
-        bufSize *= dims[i];
-    }
-    delete [] dims;
+	// Get dims and compute buffer size
+	std::vector<std::string> dims_vec = split(dims_str, _dimsSeparator.c_str());
+	size_t* dims = new size_t[rank];
+	size_t bufSize = 1;
+	for (size_t i = 0; i < rank; ++i)
+	{
+		std::stringstream ss(dims_vec.at(i));
+		ss >> dims[i];
+		bufSize *= dims[i];
+	}
+	delete [] dims;
 
-    // Split data and convert to right type
-    std::vector<std::string> data_vec = split(data_str, _textSeparator.c_str());
-    if (bufSize != data_vec.size())
-    {
-        std::ostringstream oss;
-        oss << "XML file is inconsistent: Possibly wrong no. of entrys in dataset '" << dataset.attribute(_attrName.c_str()).value() << "'";
-        throw std::invalid_argument(oss.str());
-    }
+	// Split data and convert to right type
+	std::vector<std::string> data_vec = split(data_str, _textSeparator.c_str());
+	if (bufSize != data_vec.size())
+	{
+		std::ostringstream oss;
+		oss << "XML file is inconsistent: Possibly wrong no. of entrys in dataset '" << dataset.attribute(_attrName.c_str()).value() << "'";
+		throw std::invalid_argument(oss.str());
+	}
 
-    std::vector<T> data(bufSize);
-    for (size_t i = 0; i < bufSize; ++i)
-    {
-        std::stringstream ss(data_vec.at(i));
-        ss >> data.at(i);
-    }
+	std::vector<T> data(bufSize);
+	for (size_t i = 0; i < bufSize; ++i)
+	{
+		std::stringstream ss(data_vec.at(i));
+		ss >> data.at(i);
+	}
 
-    closeGroup();
-    return data;
+	closeGroup();
+	return data;
 }
 
 

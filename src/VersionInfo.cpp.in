@@ -17,10 +17,10 @@ namespace casema
 	const char GIT_COMMIT_HASH[] = "@GIT_SHA1@";
 	const char CASEMA_VERSION_STR[] = CASEMA_VERSION;
 
-    const char* getVersion()
-    {
-    	return casema::CASEMA_VERSION_STR;
-    }
+	const char* getVersion()
+	{
+		return casema::CASEMA_VERSION_STR;
+	}
 
 	const char* getCommitHash()
 	{

@@ -22,15 +22,15 @@ namespace mpfr
 {
 	inline mpreal binom(unsigned long int n, unsigned long int k)
 	{
-	    mpz_t ret;
-	    mpz_init(ret);
+		mpz_t ret;
+		mpz_init(ret);
 
-	    mpz_bin_uiui(ret, n, k);
+		mpz_bin_uiui(ret, n, k);
 
-	    mpreal y(ret);
-	    mpz_clear(ret);
+		mpreal y(ret);
+		mpz_clear(ret);
 
-	    return y;
+		return y;
 	}
 }
 

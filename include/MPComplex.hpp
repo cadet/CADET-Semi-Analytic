@@ -104,61 +104,61 @@ namespace mpfr
 
 		friend const mpcomplex operator-(const mpcomplex& a);
 
-	    mpcomplex& operator=(const mpreal& v);
-	    mpcomplex& operator=(const mpcomplex& v);
-	    mpcomplex& operator=(const double v);        
-	    mpcomplex& operator=(const char* s);
-	    mpcomplex& operator=(const std::string& s);
+		mpcomplex& operator=(const mpreal& v);
+		mpcomplex& operator=(const mpcomplex& v);
+		mpcomplex& operator=(const double v);        
+		mpcomplex& operator=(const char* s);
+		mpcomplex& operator=(const std::string& s);
 
-	    // +
-	    mpcomplex& operator+=(const mpcomplex& v);
-	    mpcomplex& operator+=(const mpreal& v);
-	    mpcomplex& operator+=(const double u);
-	    friend const mpcomplex operator+(const mpreal& b,     const mpcomplex& a);
-	    friend const mpcomplex operator+(const mpcomplex& b,  const mpreal& a);
-	    friend const mpcomplex operator+(const mpcomplex& b,  const mpcomplex& a);
+		// +
+		mpcomplex& operator+=(const mpcomplex& v);
+		mpcomplex& operator+=(const mpreal& v);
+		mpcomplex& operator+=(const double u);
+		friend const mpcomplex operator+(const mpreal& b,     const mpcomplex& a);
+		friend const mpcomplex operator+(const mpcomplex& b,  const mpreal& a);
+		friend const mpcomplex operator+(const mpcomplex& b,  const mpcomplex& a);
 
-	    // -
-	    mpcomplex& operator-=(const mpcomplex& v);
-	    mpcomplex& operator-=(const mpreal& v);
-	    mpcomplex& operator-=(const double u);
-	    friend const mpcomplex operator-(const mpreal& b,     const mpcomplex& a);
-	    friend const mpcomplex operator-(const mpcomplex& b,  const mpreal& a);
-	    friend const mpcomplex operator-(const mpcomplex& b,  const mpcomplex& a);
+		// -
+		mpcomplex& operator-=(const mpcomplex& v);
+		mpcomplex& operator-=(const mpreal& v);
+		mpcomplex& operator-=(const double u);
+		friend const mpcomplex operator-(const mpreal& b,     const mpcomplex& a);
+		friend const mpcomplex operator-(const mpcomplex& b,  const mpreal& a);
+		friend const mpcomplex operator-(const mpcomplex& b,  const mpcomplex& a);
 
-	    // *
-	    mpcomplex& operator*=(const mpcomplex& v);
-	    mpcomplex& operator*=(const mpreal& v);
-	    mpcomplex& operator*=(const double v);
-	    friend const mpcomplex operator*(const mpreal& b,     const mpcomplex& a);
-	    friend const mpcomplex operator*(const mpcomplex& b,  const mpreal& a);
-	    friend const mpcomplex operator*(const mpcomplex& b,  const mpcomplex& a);
-	    
-	    // /
-	    mpcomplex& operator/=(const mpcomplex& v);
-	    mpcomplex& operator/=(const mpreal& v);
-	    mpcomplex& operator/=(const double v);
-	    friend const mpcomplex operator/(const mpreal& b,     const mpcomplex& a);
-	    friend const mpcomplex operator/(const mpcomplex& b,  const mpreal& a);
-	    friend const mpcomplex operator/(const mpcomplex& b,  const mpcomplex& a);
+		// *
+		mpcomplex& operator*=(const mpcomplex& v);
+		mpcomplex& operator*=(const mpreal& v);
+		mpcomplex& operator*=(const double v);
+		friend const mpcomplex operator*(const mpreal& b,     const mpcomplex& a);
+		friend const mpcomplex operator*(const mpcomplex& b,  const mpreal& a);
+		friend const mpcomplex operator*(const mpcomplex& b,  const mpcomplex& a);
+		
+		// /
+		mpcomplex& operator/=(const mpcomplex& v);
+		mpcomplex& operator/=(const mpreal& v);
+		mpcomplex& operator/=(const double v);
+		friend const mpcomplex operator/(const mpreal& b,     const mpcomplex& a);
+		friend const mpcomplex operator/(const mpcomplex& b,  const mpreal& a);
+		friend const mpcomplex operator/(const mpcomplex& b,  const mpcomplex& a);
 
-	    // Boolean Operators
-	    friend bool operator== (const mpcomplex& a, const mpcomplex& b);
-	    friend bool operator!= (const mpcomplex& a, const mpcomplex& b);
+		// Boolean Operators
+		friend bool operator== (const mpcomplex& a, const mpcomplex& b);
+		friend bool operator!= (const mpcomplex& a, const mpcomplex& b);
 
-	    // Optimized specializations for boolean operators
-	    friend bool operator== (const mpcomplex& a, const long int b);
+		// Optimized specializations for boolean operators
+		friend bool operator== (const mpcomplex& a, const long int b);
 
-	    // Convert mpcomplex to string with n significant digits in base b
-	    // n = -1 -> convert with the maximum available digits
-	    std::string toString(int n = -1, int b = 10) const;
+		// Convert mpcomplex to string with n significant digits in base b
+		// n = -1 -> convert with the maximum available digits
+		std::string toString(int n = -1, int b = 10) const;
 
-	    std::ostream& output(std::ostream& os) const;
+		std::ostream& output(std::ostream& os) const;
 
-	    // Get raw pointers so that mpreal can be directly used in raw mpfr_* functions
-	    ::mpc_ptr    mpc_ptr() { return _val; }
-	    ::mpc_srcptr mpc_ptr()    const  { return _val; }
-	    ::mpc_srcptr mpc_srcptr() const  { return _val; }
+		// Get raw pointers so that mpreal can be directly used in raw mpfr_* functions
+		::mpc_ptr    mpc_ptr() { return _val; }
+		::mpc_srcptr mpc_ptr()    const  { return _val; }
+		::mpc_srcptr mpc_srcptr() const  { return _val; }
 
 	protected:
 		::mpc_t _val;
@@ -176,44 +176,44 @@ namespace mpfr
 	// = Assignment
 	inline mpcomplex& mpcomplex::operator=(const mpcomplex& v)
 	{
-	    if (this != &v)
-	    {
-	        mpc_set(_val, v._val, MPC_RNDNN);
-	    }
-	    return *this;
+		if (this != &v)
+		{
+			mpc_set(_val, v._val, MPC_RNDNN);
+		}
+		return *this;
 	}
 
 	inline mpcomplex& mpcomplex::operator=(const mpreal& v)
 	{
-	    mpc_set_fr(_val, v.mpfr_srcptr(), MPC_RNDNN);
-	    return *this;
+		mpc_set_fr(_val, v.mpfr_srcptr(), MPC_RNDNN);
+		return *this;
 	}
 
 	inline mpcomplex& mpcomplex::operator=(const double v)
 	{
-	    mpc_set_d(_val, v, MPC_RNDNN);
-	    return *this;
+		mpc_set_d(_val, v, MPC_RNDNN);
+		return *this;
 	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// + Addition
 	inline mpcomplex& mpcomplex::operator+=(const mpcomplex& v)
 	{
-	    mpc_add(_val, _val, v._val, MPC_RNDNN);
-	    return *this;
+		mpc_add(_val, _val, v._val, MPC_RNDNN);
+		return *this;
 	}
 
 	inline mpcomplex& mpcomplex::operator+=(const mpreal& v)
 	{
-	    mpc_add_fr(_val, _val, v.mpfr_srcptr(), MPC_RNDNN);
-	    return *this;
+		mpc_add_fr(_val, _val, v.mpfr_srcptr(), MPC_RNDNN);
+		return *this;
 	}
 
 	inline mpcomplex& mpcomplex::operator+= (const double u)
 	{
 		mpreal x(u);
-	    mpc_add_fr(_val,_val, x.mpfr_srcptr(),MPC_RNDNN);
-	    return *this;
+		mpc_add_fr(_val,_val, x.mpfr_srcptr(),MPC_RNDNN);
+		return *this;
 	}
 
 
@@ -242,21 +242,21 @@ namespace mpfr
 	// - Subtraction
 	inline mpcomplex& mpcomplex::operator-=(const mpcomplex& v)
 	{
-	    mpc_sub(_val, _val, v._val, MPC_RNDNN);
-	    return *this;
+		mpc_sub(_val, _val, v._val, MPC_RNDNN);
+		return *this;
 	}
 
 	inline mpcomplex& mpcomplex::operator-=(const mpreal& v)
 	{
-	    mpc_sub_fr(_val, _val, v.mpfr_srcptr(), MPC_RNDNN);
-	    return *this;
+		mpc_sub_fr(_val, _val, v.mpfr_srcptr(), MPC_RNDNN);
+		return *this;
 	}
 
 	inline mpcomplex& mpcomplex::operator-= (const double u)
 	{
 		mpreal x(u);
-	    mpc_sub_fr(_val,_val, x.mpfr_srcptr(),MPC_RNDNN);
-	    return *this;
+		mpc_sub_fr(_val,_val, x.mpfr_srcptr(),MPC_RNDNN);
+		return *this;
 	}
 
 
@@ -286,21 +286,21 @@ namespace mpfr
 	// * Multiplication
 	inline mpcomplex& mpcomplex::operator*=(const mpcomplex& v)
 	{
-	    mpc_mul(_val, _val, v._val, MPC_RNDNN);
-	    return *this;
+		mpc_mul(_val, _val, v._val, MPC_RNDNN);
+		return *this;
 	}
 
 	inline mpcomplex& mpcomplex::operator*=(const mpreal& v)
 	{
-	    mpc_mul_fr(_val, _val, v.mpfr_srcptr(), MPC_RNDNN);
-	    return *this;
+		mpc_mul_fr(_val, _val, v.mpfr_srcptr(), MPC_RNDNN);
+		return *this;
 	}
 
 	inline mpcomplex& mpcomplex::operator*= (const double u)
 	{
 		mpreal x(u);
-	    mpc_mul_fr(_val,_val, x.mpfr_srcptr(),MPC_RNDNN);
-	    return *this;
+		mpc_mul_fr(_val,_val, x.mpfr_srcptr(),MPC_RNDNN);
+		return *this;
 	}
 
 
@@ -329,21 +329,21 @@ namespace mpfr
 	// / Division
 	inline mpcomplex& mpcomplex::operator/=(const mpcomplex& v)
 	{
-	    mpc_div(_val, _val, v._val, MPC_RNDNN);
-	    return *this;
+		mpc_div(_val, _val, v._val, MPC_RNDNN);
+		return *this;
 	}
 
 	inline mpcomplex& mpcomplex::operator/=(const mpreal& v)
 	{
-	    mpc_div_fr(_val, _val, v.mpfr_srcptr(), MPC_RNDNN);
-	    return *this;
+		mpc_div_fr(_val, _val, v.mpfr_srcptr(), MPC_RNDNN);
+		return *this;
 	}
 
 	inline mpcomplex& mpcomplex::operator/= (const double u)
 	{
 		mpreal x(u);
-	    mpc_div_fr(_val,_val, x.mpfr_srcptr(),MPC_RNDNN);
-	    return *this;
+		mpc_div_fr(_val,_val, x.mpfr_srcptr(),MPC_RNDNN);
+		return *this;
 	}
 
 
@@ -377,9 +377,9 @@ namespace mpfr
 
 
 	#define MPCOMPLEX_UNARY_MATH_FUNCTION_BODY(f)                 \
-	        mpcomplex y;          \
-	        mpc_##f(y.mpc_ptr(), x.mpc_srcptr(), MPC_RNDNN);           \
-	        return y; 
+			mpcomplex y;          \
+			mpc_##f(y.mpc_ptr(), x.mpc_srcptr(), MPC_RNDNN);           \
+			return y; 
 
 	inline const mpcomplex sqr(const mpcomplex& x) { MPCOMPLEX_UNARY_MATH_FUNCTION_BODY(sqr ); }
 	inline const mpcomplex sqrt(const mpcomplex& x) { MPCOMPLEX_UNARY_MATH_FUNCTION_BODY(sqrt); }
@@ -424,45 +424,45 @@ namespace mpfr
 	// I/O
 	inline std::ostream& mpcomplex::output(std::ostream& os) const 
 	{
-	    std::ostringstream format;
-	    const std::ios::fmtflags flags = os.flags();
+		std::ostringstream format;
+		const std::ios::fmtflags flags = os.flags();
 
-	    format << ((flags & std::ios::showpos) ? "%+" : "%");
-	    if (os.precision() >= 0)
-	        format << '.' << os.precision() << "R*"
-	               << ((flags & std::ios::floatfield) == std::ios::fixed ? 'f' :
-	                   (flags & std::ios::floatfield) == std::ios::scientific ? 'e' :
-	                   'g');
-	    else
-	        format << "R*e";
+		format << ((flags & std::ios::showpos) ? "%+" : "%");
+		if (os.precision() >= 0)
+			format << '.' << os.precision() << "R*"
+				   << ((flags & std::ios::floatfield) == std::ios::fixed ? 'f' :
+					   (flags & std::ios::floatfield) == std::ios::scientific ? 'e' :
+					   'g');
+		else
+			format << "R*e";
 
-	    char *s = NULL;
-	    if(!(mpfr_asprintf(&s, format.str().c_str(),
-	                        mpfr::mpreal::get_default_rnd(),
-	                        real().mpfr_srcptr())
-	        < 0))
-	    {
-	        os << std::string(s);
-	        mpfr_free_str(s);
-	    }
-	    
-	    if(!(mpfr_asprintf(&s, format.str().c_str(),
-	                        mpfr::mpreal::get_default_rnd(),
-	                        imag().mpfr_srcptr())
-	        < 0))
-	    {
-	    	if (!(flags & std::ios::showpos) && (s[0] != '+') && (s[0] != '-'))
-	        	os << " +" << std::string(s) << "i";
-	        else
-	        	os << " " << std::string(s) << "i";
-	        mpfr_free_str(s);
-	    }
-	    return os;
+		char *s = NULL;
+		if(!(mpfr_asprintf(&s, format.str().c_str(),
+							mpfr::mpreal::get_default_rnd(),
+							real().mpfr_srcptr())
+			< 0))
+		{
+			os << std::string(s);
+			mpfr_free_str(s);
+		}
+		
+		if(!(mpfr_asprintf(&s, format.str().c_str(),
+							mpfr::mpreal::get_default_rnd(),
+							imag().mpfr_srcptr())
+			< 0))
+		{
+			if (!(flags & std::ios::showpos) && (s[0] != '+') && (s[0] != '-'))
+				os << " +" << std::string(s) << "i";
+			else
+				os << " " << std::string(s) << "i";
+			mpfr_free_str(s);
+		}
+		return os;
 	}
 
 	inline std::ostream& operator<<(std::ostream& os, const mpcomplex& v)
 	{
-	    return v.output(os);
+		return v.output(os);
 	}
 
 	inline std::string mpcomplex::toString(int n, int b) const

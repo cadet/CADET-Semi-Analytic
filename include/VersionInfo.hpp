@@ -18,11 +18,11 @@
 namespace casema
 {
 
-    //! \brief Returns the version string of the library
-    const char* getVersion();
+	//! \brief Returns the version string of the library
+	const char* getVersion();
 
-    //! \brief Returns the git commit hash of the source which was used to build the binaries
-    const char* getCommitHash();
+	//! \brief Returns the git commit hash of the source which was used to build the binaries
+	const char* getCommitHash();
 
 } // namespace cadet
 

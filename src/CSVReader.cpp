@@ -90,8 +90,8 @@ namespace casema
 			// Try to convert all items
 			for (std::size_t i = 0; i < tokens.size(); ++i)
 			{
-		        const std::size_t prec = mpfr::mpreal::get_default_prec();
-		        const std::size_t inprec = mpfr::digits2bits(tokens[i].size()+2);
+				const std::size_t prec = mpfr::mpreal::get_default_prec();
+				const std::size_t inprec = mpfr::digits2bits(tokens[i].size()+2);
 
 				const char* const str = tokens[i].c_str();
 				mpfr::mpreal data(0, std::max(prec, inprec));

@@ -25,48 +25,48 @@
 
 namespace casema
 {
-    namespace detail
-    {
-        template <typename real_t, class reader_t>
-        ModelData<real_t> readModel(const std::string& fileName)
-        {
-            reader_t reader;
+	namespace detail
+	{
+		template <typename real_t, class reader_t>
+		ModelData<real_t> readModel(const std::string& fileName)
+		{
+			reader_t reader;
 
-            reader.openFile(fileName);
-            casema::ModelData<real_t> model = casema::readModel<reader_t, real_t>(reader);
-            reader.closeFile();
+			reader.openFile(fileName);
+			casema::ModelData<real_t> model = casema::readModel<reader_t, real_t>(reader);
+			reader.closeFile();
 
-            return model;
-        }
-    }
+			return model;
+		}
+	}
 
-    template <typename real_t>
-    bool readModel(const std::string& fileName, ModelData<real_t>& out)
-    {
-        // Extract suffix
-        std::size_t fileEnding = fileName.find_last_of('.') + 1;
-        std::string ext = fileName.substr(fileEnding);
-        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+	template <typename real_t>
+	bool readModel(const std::string& fileName, ModelData<real_t>& out)
+	{
+		// Extract suffix
+		std::size_t fileEnding = fileName.find_last_of('.') + 1;
+		std::string ext = fileName.substr(fileEnding);
+		std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
-        try
-        {
-            // Select reader
-            if (ext == "h5")
-                out = detail::readModel<real_t, casema::HDF5Reader>(fileName);
-            else if (ext == "xml")
-                out = detail::readModel<real_t, casema::XMLReader>(fileName);
-            else
-                return false;
-            
-            return true;
-        }
-        catch (const std::exception& e)
-        {
-            std::cout << "ERROR: " << e.what() << std::endl;
-        }
+		try
+		{
+			// Select reader
+			if (ext == "h5")
+				out = detail::readModel<real_t, casema::HDF5Reader>(fileName);
+			else if (ext == "xml")
+				out = detail::readModel<real_t, casema::XMLReader>(fileName);
+			else
+				return false;
+			
+			return true;
+		}
+		catch (const std::exception& e)
+		{
+			std::cout << "ERROR: " << e.what() << std::endl;
+		}
 
-        return false;
-    }
+		return false;
+	}
 
 }
 
