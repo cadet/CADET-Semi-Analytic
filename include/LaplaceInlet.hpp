@@ -19,7 +19,7 @@
 
 namespace casema
 {
-	namespace laplaceSolution
+	namespace LaplaceSolution
 	{
 		template <typename num_t, typename data_t>
 		class Inlet

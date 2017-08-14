@@ -38,7 +38,7 @@
 #endif
 #include <cppad/cppad.hpp>
 
-typedef casema::laplaceSolution::Inlet<mpfr::mpreal, mpfr::mpreal> Inlet_t;
+typedef casema::LaplaceSolution::Inlet<mpfr::mpreal, mpfr::mpreal> Inlet_t;
 
 
 casema::ModelData<mpfr::mpreal> qamarModel(const mpfr::mpreal& velocity)
@@ -242,7 +242,7 @@ void run(const casema::ModelData<mpfr::mpreal>& model, int order, std::size_t pr
 	Inlet_t inlet(model);
 	if (model.kineticBinding)
 	{
-		typedef casema::laplaceSolution::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
 
 		if (!useCppAD)
 		{
@@ -255,7 +255,7 @@ void run(const casema::ModelData<mpfr::mpreal>& model, int order, std::size_t pr
 	}
 	else
 	{
-		typedef casema::laplaceSolution::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
 
 		if (!useCppAD)
 		{

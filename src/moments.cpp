@@ -491,9 +491,9 @@ void calcAllMoments(std::ostream& os, casema::MomentGenerator<real_t>& momGen, c
 template <typename real_t>
 void run(std::ostream& os, const casema::ModelData<real_t>& model, casema::ConsensusEstimator<real_t>& estimator, casema::Sequence<real_t>& seq, const ProgramOptions<real_t>& opts)
 {
-	typedef casema::laplaceSolution::Inlet<real_t, real_t> Inlet_t;
-	typedef casema::laplaceSolution::SingleComponentLinearDynamic<real_t, real_t, Inlet_t> SolutionDyn_t;
-	typedef casema::laplaceSolution::SingleComponentLinearRapidEquilibrium<real_t, real_t, Inlet_t> SolutionREq_t;
+	typedef casema::LaplaceSolution::Inlet<real_t, real_t> Inlet_t;
+	typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<real_t, real_t, Inlet_t> SolutionDyn_t;
+	typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<real_t, real_t, Inlet_t> SolutionREq_t;
 
 	casema::MomentGenerator<real_t>* momGen = nullptr;
 	Inlet_t inlet(model);

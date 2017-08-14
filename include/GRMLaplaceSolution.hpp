@@ -19,7 +19,9 @@
 
 namespace casema
 {
-	namespace laplaceSolution
+namespace LaplaceSolution
+{
+	namespace GeneralRateModel
 	{
 		template <typename num_t, typename data_t, typename Inlet_t>
 		class SingleComponentLinearRapidEquilibrium
@@ -199,8 +201,8 @@ namespace casema
 			}
 		};
 
-	}
-
-}
+	} // namespace GeneralRateModel
+} // namespace LaplaceSolution
+} // namespace casema
 
 #endif

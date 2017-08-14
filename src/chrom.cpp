@@ -44,7 +44,7 @@
 
 #include "CliErrorParser.hpp"
 
-typedef casema::laplaceSolution::Inlet<mpfr::mpreal, mpfr::mpreal> Inlet_t;
+typedef casema::LaplaceSolution::Inlet<mpfr::mpreal, mpfr::mpreal> Inlet_t;
 
 template <typename real_t>
 struct ProgramOptions
@@ -178,12 +178,12 @@ void run(casema::ModelData<mpfr::mpreal>& model, const ProgramOptions<mpfr::mpre
 	Inlet_t inlet(model);
 	if (model.kineticBinding)
 	{
-		typedef casema::laplaceSolution::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
 		output = invert<casema::ModelData<mpfr::mpreal>, Solution_t, Inlet_t>(model, inlet, timeOffset, opts);
 	}
 	else
 	{
-		typedef casema::laplaceSolution::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
 		output = invert<casema::ModelData<mpfr::mpreal>, Solution_t, Inlet_t>(model, inlet, timeOffset, opts);
 	}
 

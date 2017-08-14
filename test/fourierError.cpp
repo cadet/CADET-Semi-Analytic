@@ -34,7 +34,7 @@
 #include "GRMLaplaceSolution.hpp"
 #include "LaplaceInlet.hpp"
 
-typedef casema::laplaceSolution::Inlet<mpfr::mpreal, mpfr::mpreal> Inlet_t;
+typedef casema::LaplaceSolution::Inlet<mpfr::mpreal, mpfr::mpreal> Inlet_t;
 
 
 template <typename real_t>
@@ -144,7 +144,7 @@ void run(const casema::ModelData<mpfr::mpreal>& model, ProgramOptions<mpfr::mpre
 
 	if (model.kineticBinding)
 	{
-		typedef casema::laplaceSolution::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
 		Solution_t solution(model, inlet);
 		if (opts.withoutInlet)
 			fourierCoeff<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(opts.precision, opts.summands, opts.tMax, opts.sigma, solution, errorExponentFactor, output, error);
@@ -153,7 +153,7 @@ void run(const casema::ModelData<mpfr::mpreal>& model, ProgramOptions<mpfr::mpre
 	}
 	else
 	{
-		typedef casema::laplaceSolution::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
 		Solution_t solution(model, inlet);
 		if (opts.withoutInlet)
 			fourierCoeff<Solution_t, mpfr::mpreal, mpfr::mpcomplex>(opts.precision, opts.summands, opts.tMax, opts.sigma, solution, errorExponentFactor, output, error);

@@ -43,7 +43,7 @@
 
 #include "CliErrorParser.hpp"
 
-typedef casema::laplaceSolution::Inlet<mpfr::mpreal, mpfr::mpreal> Inlet_t;
+typedef casema::LaplaceSolution::Inlet<mpfr::mpreal, mpfr::mpreal> Inlet_t;
 
 
 class PrecisionGuard
@@ -290,13 +290,13 @@ void run(const casema::ModelData<mpfr::mpreal>& model, const ProgramOptions<mpfr
 	Inlet_t inlet(model);
 	if (model.kineticBinding)
 	{
-		typedef casema::laplaceSolution::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
 		Solution_t solution(model, inlet);
 		calcMoment<mpfr::mpreal, Solution_t>(solution, model, opts, *os);
 	}
 	else
 	{
-		typedef casema::laplaceSolution::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
 		Solution_t solution(model, inlet);
 		calcMoment<mpfr::mpreal, Solution_t>(solution, model, opts, *os);
 	}

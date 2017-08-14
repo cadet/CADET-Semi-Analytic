@@ -33,7 +33,7 @@
 #include "GRMLaplaceSolution.hpp"
 #include "LaplaceInlet.hpp"
 
-typedef casema::laplaceSolution::Inlet<mpfr::mpreal, mpfr::mpreal> Inlet_t;
+typedef casema::LaplaceSolution::Inlet<mpfr::mpreal, mpfr::mpreal> Inlet_t;
 
 
 inline void progressBar(unsigned int cur, unsigned int total, unsigned int w = 50)
@@ -123,7 +123,7 @@ void run(casema::ModelData<mpfr::mpreal>& model, std::size_t nRe, std::size_t nI
 	Inlet_t inlet(model);
 	if (model.kineticBinding)
 	{
-		typedef casema::laplaceSolution::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
 		Solution_t solution(model, inlet);
 		if (outFile.empty())
 		{
@@ -137,7 +137,7 @@ void run(casema::ModelData<mpfr::mpreal>& model, std::size_t nRe, std::size_t nI
 	}
 	else
 	{
-		typedef casema::laplaceSolution::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
 		Solution_t solution(model, inlet);
 		if (outFile.empty())
 		{

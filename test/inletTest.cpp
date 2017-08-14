@@ -37,7 +37,7 @@
 #include "LaplaceInlet.hpp"
 #include "CliErrorParser.hpp"
 
-typedef casema::laplaceSolution::Inlet<mpfr::mpreal, mpfr::mpreal> Inlet_t;
+typedef casema::LaplaceSolution::Inlet<mpfr::mpreal, mpfr::mpreal> Inlet_t;
 
 
 template <typename real_t>

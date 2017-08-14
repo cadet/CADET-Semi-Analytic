@@ -35,7 +35,7 @@
 #include "ADMoments.hpp"
 #include "AnalyticalMoments.hpp"
 
-typedef casema::laplaceSolution::Inlet<mpfr::mpreal, mpfr::mpreal> Inlet_t;
+typedef casema::LaplaceSolution::Inlet<mpfr::mpreal, mpfr::mpreal> Inlet_t;
 
 struct ProgramOptions
 {
@@ -106,7 +106,7 @@ void run(casema::ModelData<mpfr::mpreal>& model, const ProgramOptions& opts)
 
 	if (model.kineticBinding)
 	{
-		typedef casema::laplaceSolution::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearDynamic<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
 		
 		if (opts.useCppAD)
 			momGen = new casema::CppADMomentGenerator<mpfr::mpreal, Solution_t>(Solution_t(model, inlet));
@@ -119,7 +119,7 @@ void run(casema::ModelData<mpfr::mpreal>& model, const ProgramOptions& opts)
 	}
 	else
 	{
-		typedef casema::laplaceSolution::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
+		typedef casema::LaplaceSolution::GeneralRateModel::SingleComponentLinearRapidEquilibrium<mpfr::mpreal, mpfr::mpreal, Inlet_t> Solution_t;
 
 		if (opts.useCppAD)
 			momGen = new casema::CppADMomentGenerator<mpfr::mpreal, Solution_t>(Solution_t(model,inlet));
