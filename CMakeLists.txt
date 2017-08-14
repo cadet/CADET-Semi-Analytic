@@ -64,7 +64,7 @@ endif()
 message(STATUS "Current git HEAD: ${GIT_REFSPEC} SHA1 ${GIT_SHA1}")
 
 # Name of the current project
-project (CASEMA_MASTER CXX)
+project (CASEMA_MASTER CXX C)
 
 # Set some variables with info on the CASEMA project
 set (PACKAGE_VERSION   "${CASEMA_VERSION}")
