@@ -12,8 +12,8 @@
 //  is available at http://www.gnu.org/licenses/gpl.html
 // =============================================================================
 
-#ifndef CASEMA_GRMLAPLACESOLUTION_HPP_
-#define CASEMA_GRMLAPLACESOLUTION_HPP_
+#ifndef CASEMA_LRMWITHPORESLAPLACESOLUTION_HPP_
+#define CASEMA_LRMWITHPORESLAPLACESOLUTION_HPP_
 
 #include "ModelData.hpp"
 
@@ -21,7 +21,7 @@ namespace casema
 {
 namespace LaplaceSolution
 {
-	namespace GeneralRateModel
+	namespace LumpedRateModelWithPores
 	{
 		template <typename num_t, typename data_t, typename Inlet_t>
 		class SingleComponentLinearRapidEquilibrium
@@ -34,7 +34,7 @@ namespace LaplaceSolution
 
 			template <typename eval_t>
 			eval_t operator()(const eval_t& s, const num_t& z) const
-			{				
+			{
 				return withoutInlet(s, z) * _inlet(s);
 			}
 
@@ -47,8 +47,8 @@ namespace LaplaceSolution
 			template <typename eval_t>
 			eval_t withoutInlet(const eval_t& s, const num_t& z) const
 			{
-				const eval_t sqrtAs = sqrt(_A_s_Factor / s);
-				const eval_t f_s = _model.filmDiffusion[0] / (_model.filmDiffusion[0] - _B / _model.parRadius + _B / (sqrtAs * tanh(_model.parRadius / sqrtAs)));
+				const eval_t A_s = s * _A_s_Factor + _A_s_Abs;
+				const eval_t f_s = _A_s_Abs / A_s;
 				const eval_t phi_s = s + _phiFactor * (_one - f_s);
 				const eval_t sqrtOnePlusFourPhiDivNuTimesU = sqrt(_one + _four * phi_s / _nuTimesU);
 				const eval_t lambda1 = _halfNu * (_one + sqrtOnePlusFourPhiDivNuTimesU);
@@ -67,7 +67,7 @@ namespace LaplaceSolution
 				return withoutInlet(s, _model.colLength);
 			}
 
-			const char* const name() const { return "GRM Single Component quasi-stationary Linear Binding"; }
+			const char* const name() const { return "LRM-Pore Single Component quasi-stationary Linear Binding"; }
 
 		protected:
 			const ModelData<data_t>& _model;
@@ -79,8 +79,8 @@ namespace LaplaceSolution
 			num_t _nuTimesU;
 			num_t _halfNu;
 			num_t _phiFactor;
-			num_t _B;
 			num_t _A_s_Factor;
+			num_t _A_s_Abs;
 
 			void precompute()
 			{
@@ -90,9 +90,9 @@ namespace LaplaceSolution
 				_nuTimesU = _nu*_model.velocity;
 				_halfNu = _nu / num_t("2.0");
 				_phiFactor = _model.filmDiffusion[0] * num_t("3.0") / _model.parRadius * F;
-
-				_B = _model.parPorosity * _model.particleDiffusion[0] + (_one - _model.parPorosity) * _model.surfaceDiffusion[0] * _model.linearKA[0] / _model.linearKD[0];
-				_A_s_Factor = (_model.surfaceDiffusion[0] * fPTimesKa + _model.particleDiffusion[0] * _model.linearKD[0]) / (fPTimesKa + _model.linearKD[0]);
+				
+				_A_s_Factor = _one + fPTimesKa / _model.linearKD[0];
+				_A_s_Abs = num_t("3.0") * _model.filmDiffusion[0] / (_model.parRadius * _model.parPorosity);
 			}
 		};
 
@@ -120,16 +120,13 @@ namespace LaplaceSolution
 			template <typename eval_t>
 			eval_t withoutInlet(const eval_t& s, const num_t& z) const
 			{
-				const eval_t B_s = _bsFirst + _bsFactor / (_model.linearKD[0] + s);
-				const eval_t sqrtAs = sqrt((_AsFirst + _model.particleDiffusion[0] * s) / (s * (_fPTimesKa + _model.linearKD[0] + s)));
-
-				const eval_t f_s = _model.filmDiffusion[0] / (_model.filmDiffusion[0] - B_s / _model.parRadius + B_s / (sqrtAs * tanh(_model.parRadius / sqrtAs)));
+				const eval_t A_s = s * (_one + _fPTimesKa / (_model.linearKD[0] + s)) + _A_s_Abs;
+				const eval_t f_s = _A_s_Abs / A_s;
 				const eval_t phi_s = s + _phiFactor * (_one - f_s);
 				const eval_t sqrtOnePlusFourPhiDivNuTimesU = sqrt(_one + _four * phi_s / _nuTimesU);
 				const eval_t lambda1 = _halfNu * (_one + sqrtOnePlusFourPhiDivNuTimesU);
 				const eval_t lambda2 = _halfNu * (_one - sqrtOnePlusFourPhiDivNuTimesU);
 
-				// Inlet for pulse injection: _model.constCoeff[0] * (_one - exp(-s * _model.sectionTimes[1])) / s
 				const eval_t commonAB = (lambda2 / _nu - _one) * lambda1 * exp(lambda1 * _model.colLength) + (_one - lambda1 / _nu) * lambda2 * exp(lambda2 * _model.colLength);
 				const eval_t A = lambda2 * exp(lambda2 * _model.colLength);
 				const eval_t B = lambda1 * exp(lambda1 * _model.colLength);
@@ -143,7 +140,7 @@ namespace LaplaceSolution
 				return withoutInlet(s, _model.colLength);
 			}
 
-			const char* const name() const { return "GRM Single Component dynamic Linear Binding"; }
+			const char* const name() const { return "LRM-Pore Single Component dynamic Linear Binding"; }
 
 		protected:
 			const ModelData<data_t>& _model;
@@ -155,28 +152,23 @@ namespace LaplaceSolution
 			num_t _nuTimesU;
 			num_t _halfNu;
 			num_t _phiFactor;
-			num_t _bsFirst;
-			num_t _bsFactor;
+			num_t _A_s_Abs;
 			num_t _fPTimesKa;
-			num_t _AsFirst;
 
 			void precompute()
 			{
 				const num_t F = (_one - _model.colPorosity) / _model.colPorosity;			    
+				_fPTimesKa = (_one - _model.parPorosity) / _model.parPorosity * _model.linearKA[0];
 				_nu = _model.velocity / _model.colDispersion;
 				_nuTimesU = _nu*_model.velocity;
 				_halfNu = _nu / num_t("2.0");
 				_phiFactor = _model.filmDiffusion[0] * num_t("3.0") / _model.parRadius * F;
-
-				_bsFirst = _model.parPorosity * _model.particleDiffusion[0];
-				_bsFactor = (_one - _model.parPorosity) * _model.surfaceDiffusion[0] * _model.linearKA[0];
-				_fPTimesKa = (_one - _model.parPorosity) / _model.parPorosity * _model.linearKA[0];
-
-				_AsFirst = _model.surfaceDiffusion[0] * _fPTimesKa + _model.particleDiffusion[0] * _model.linearKD[0];
+				
+				_A_s_Abs = num_t("3.0") * _model.filmDiffusion[0] / (_model.parRadius * _model.parPorosity);
 			}
 		};
 
-	} // namespace GeneralRateModel
+	} // namespace LumpedRateModelWithPores
 } // namespace LaplaceSolution
 } // namespace casema
 

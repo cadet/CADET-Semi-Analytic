@@ -58,6 +58,8 @@ namespace casema
 
 		bool writeUserTimes;
 		std::vector<real_t> outletTimes;
+
+		inline real_t totalPorosity() const { return colPorosity + (real_t(1) - colPorosity) * parPorosity; }
 	};
 
 	template <typename real_t>
