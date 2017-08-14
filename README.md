@@ -4,7 +4,7 @@
 
 The Chromatography Analysis and Design Toolkit (CADET) is developed at the Institute of Bio- and Geosciences 1 (IBG-1) of Forschungszentrum Jülich (FZJ) under supervision of Dr. Eric von Lieres. This is the semi analytic extension of the [core CADET project](https://github.com/modsim/cadet), of which both are freely distributed (under the terms of the GPLv3) as a contribution to the scientific community. If you find it useful for your own work, we would appreciate acknowledgements of this software and citations of our papers:
 
-* S. Leweke, E. von Lieres: Fast arbitrary order moments and arbitrary precision solution of the general rate model of column liquid chromatography with linear isotherm, Computers and Chemical Engineering, submitted.
+* S. Leweke, E. von Lieres (2016): [Fast arbitrary order moments and arbitrary precision solution of the general rate model of column liquid chromatography with linear isotherm](https://doi.org/10.1016/j.compchemeng.2015.09.009), Computers & Chemical Engineering, 84, 350–362.
 
 ## Features
 
@@ -28,7 +28,7 @@ CADET-semi-analytic has been successfully built and run on the following platfor
 
 ### Dependencies
 
-* A C++11 capable compiler (e.g., GCC >= 4.7, Clang >= 3.3, MS Visual Studio >= 2010)
+* A C++11 capable compiler with OpenMP support (e.g., GCC >= 4.7, Clang >= 3.7, MS Visual Studio >= 2010)
 * [CMake](http://cmake.org/)
 * [HDF5](http://www.hdfgroup.org/HDF5/)
 * [GMP](https://gmplib.org/)
