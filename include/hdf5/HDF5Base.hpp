@@ -10,221 +10,227 @@
 //  are made available under the terms of the GNU Public License v3.0 (or, at
 //  your option, any later version) which accompanies this distribution, and
 //  is available at http://www.gnu.org/licenses/gpl.html
-//
-//  This file is taken from the CADET core project. The authors of this very
-//  file are listed in the copyright notice below:
-//  Copyright © 2008-2015: Eric von Lieres¹, Joel Andersson¹,
-//                         Andreas Puettmann¹, Sebastian Schnittert¹,
-//                         Samuel Leweke¹
 // =============================================================================
 
 #ifndef HDF5BASE_HPP_
 #define HDF5BASE_HPP_
 
-// Set appropriate compiler macros for windows or linux otherwise
-#ifndef CURRENT_FUNCTION
-  #ifdef _WIN32
-    #define CURRENT_FUNCTION (__FUNCTION__)
-  #else
-    #define CURRENT_FUNCTION (__FUNCTION__)
-  //#define CURRENT_FUNCTION (__PRETTY_FUNCTION__) // GCC: Function names including their type signature of the function as well as its bare name
-  #endif
-#endif
-
 #include <vector>
 #include <string>
 #include <stack>
+#include <stdexcept>
 
-#include <H5Cpp.h>
+#include <hdf5.h>
 
 namespace casema
 {
 
+class IOException : public std::runtime_error
+{
+public:
+	IOException(const std::string& message) : std::runtime_error(message) { }
+};
+
 class HDF5Base
 {
 public:
-    /// \brief Constructor
-    HDF5Base();
+	/// \brief Constructor
+	HDF5Base();
 
-    /// \brief Destructor
-    ~HDF5Base();
+	/// \brief Destructor
+	~HDF5Base();
 
-    /// \brief Open an HDF5 file
-    inline void openFile(const std::string& fileName, const std::string& mode = "r");
-    inline void openFile(const char* fileName, const std::string& mode = "r") { openFile(std::string(fileName), mode); }
+	/// \brief Open an HDF5 file
+	inline void openFile(const std::string& fileName, const std::string& mode = "r");
+	inline void openFile(const char* fileName, const std::string& mode = "r") { openFile(std::string(fileName), mode); }
 
-    /// \brief Close the currently opened file
-    inline void closeFile();
+	/// \brief Close the currently opened file
+	inline void closeFile();
 
-    /// \brief Set a group to be [read from/written to] in all subsequent calls to [read/write] methods
-    inline void setGroup(const std::string& groupName);
+	/// \brief Set a group to be [read from/written to] in all subsequent calls to [read/write] methods
+	inline void setGroup(const std::string& groupName);
 
-    /// \brief Checks if the given dataset or group exists in the file
-    inline bool exists(const std::string& elementName);
-    inline bool exists(const char* elementName) { return exists(std::string(elementName)); }
+	/// \brief Open the subgroup with the given name
+	inline void pushGroup(const std::string& groupName);
+	/// \brief Close the currently open subgroup 
+	inline void popGroup();
 
-    /// \brief Checks if the given dataset is a vector (i.e., has more than one value)
-    inline bool isVector(const std::string& elementName);
-    inline bool isVector(const char* elementName) { return isVector(std::string(elementName)); }
+	/// \brief Checks if the given dataset or group exists in the file
+	inline bool exists(const std::string& elementName);
+	inline bool exists(const char* elementName) { return exists(std::string(elementName)); }
+
+	/// \brief Checks if the given dataset is a vector (i.e., has more than one value)
+	inline bool isVector(const std::string& elementName);
+	inline bool isVector(const char* elementName) { return isVector(std::string(elementName)); }
 
 protected:
-    H5::H5File      _file;
-    H5::DataSpace   _dataSpace;
-    H5::DataSet     _dataSet;
-    H5::DataType    _dataType;
+	hid_t           _file;
 
-    std::stack<H5::Group>    _groupsOpened;
-    std::vector<std::string> _groupNames;
+	std::stack<hid_t>        _groupsOpened;
+	std::vector<std::string> _groupNames;
 
-    void openGroup(bool forceCreation = false);
-    void closeGroup();
+	void openGroup(bool forceCreation = false);
+	void closeGroup();
 };
 
 
-
-
-// ====================================================================================================================
-//    IMPLEMENTATION PART
-// ====================================================================================================================
 HDF5Base::HDF5Base()
 {
-    H5::Exception::dontPrint();
-    _groupNames.push_back("/");
+	H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+	_groupNames.push_back("/");
 }
 
 
-HDF5Base::~HDF5Base(){}
+HDF5Base::~HDF5Base() { }
 
 
 void HDF5Base::openFile(const std::string& fileName, const std::string& mode)
 {
-    if      (mode == "r" ) _file = H5::H5File(fileName, H5F_ACC_RDONLY);    // open in read mode
-    else if (mode == "rw") _file = H5::H5File(fileName, H5F_ACC_RDWR);      // open in read / write mode
-    else if (mode == "c" ) _file = H5::H5File(fileName, H5F_ACC_CREAT);     // create new file
-    else if (mode == "co") _file = H5::H5File(fileName, H5F_ACC_TRUNC);     // create / overwrite new file
-    else if (mode == "cf") _file = H5::H5File(fileName, H5F_ACC_EXCL);      // create / fail on existent file
-    else if (mode == "d" ) _file = H5::H5File(fileName, H5F_ACC_DEBUG);     // print debug infos
-    else throw H5::Exception(CURRENT_FUNCTION, "Wrong file open mode");
+	if      (mode == "r" ) _file = H5Fopen(fileName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT); // open in read mode
+	else if (mode == "rw") _file = H5Fopen(fileName.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);   // open in read / write mode
+	else if (mode == "c" ) _file = H5Fcreate(fileName.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT); // create new file
+	else if (mode == "co") _file = H5Fcreate(fileName.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT); // create / overwrite new file
+	else throw IOException("Wrong file open mode");
+
+	if (_file < 0)
+		throw IOException("Failed to open or create HDF5 file \"" + fileName + "\" in mode " + mode);
 }
 
 
 void HDF5Base::closeFile()
 {
-    closeGroup();
-    _file.close();
+	closeGroup();
+	H5Fclose(_file);
 }
 
 
 bool HDF5Base::exists(const std::string& elementName)
 {
-    openGroup();
+	openGroup();
 
-    // Try to open elementName as group
-    try
-    {
-        H5::Group grp = _groupsOpened.top().openGroup(elementName);
-        grp.close();
+	// Try to open elementName as group
+	hid_t grp = H5Gopen2(_groupsOpened.top(), elementName.c_str(), H5P_DEFAULT);
+	if (grp >= 0)
+	{
+		// Found the group
+		H5Gclose(grp);
+		closeGroup();
+		return true;        
+	}
 
-        // Found the group
-        closeGroup();
-        return true;
-    }
-    catch ( const H5::Exception& ) { }
+	// Try to open elementName as dataset
+	hid_t dset = H5Dopen2(_groupsOpened.top(), elementName.c_str(), H5P_DEFAULT);
+	if (dset >= 0)
+	{
+		// Found the dataset
+		H5Dclose(dset);
+		closeGroup();
+		return true;
+	}
 
-    // Try to open elementName as dataset
-    try
-    {
-        H5::DataSet ds = _groupsOpened.top().openDataSet(elementName);
-        ds.close();
-
-        // Found the dataset
-        closeGroup();
-        return true;
-    }
-    catch ( const H5::Exception& ) { }
-
-    // Not found
-    closeGroup();
-    return false;
+	// Not found
+	closeGroup();
+	return false;
 }
 
 
 bool HDF5Base::isVector(const std::string& elementName)
 {
-    openGroup();
-    bool isVector = false;
-    try
-    {
-        H5::DataSet ds = _groupsOpened.top().openDataSet(elementName);
-        isVector = ds.getSpace().getSimpleExtentNpoints() > 1;
-        ds.close();
-    }
-    catch ( const H5::Exception& ) { }
+	openGroup();
 
-    // Not found
-    closeGroup();
-    return isVector;
+	hid_t dset = H5Dopen2(_groupsOpened.top(), elementName.c_str(), H5P_DEFAULT);
+	if (dset < 0)
+	{
+		closeGroup();
+		return false;
+	}
+
+	hid_t dspace = H5Dget_space(dset);
+	if (dspace < 0)
+	{
+		H5Dclose(dset);
+		closeGroup();
+		return false;
+	}
+
+	const bool isVector = H5Sget_simple_extent_npoints(dspace) > 1;
+
+	H5Sclose(dspace);
+	H5Dclose(dset);
+	closeGroup();
+
+	return isVector;
 }
 
 
 void HDF5Base::setGroup(const std::string& groupName)
 {
-    _groupNames.clear();
+	_groupNames.clear();
 
-    size_t start   = 0;
-    size_t end     = 0;
-    std::string delimiter("/");
+	size_t start   = 0;
+	size_t end     = 0;
+	std::string delimiter("/");
 
-    // Quick return when called with empty group name
-    if (groupName.empty())
-    {
-        _groupNames.push_back("/");
-        return;
-    }
+	// Quick return when called with empty group name
+	if (groupName.empty())
+	{
+		_groupNames.push_back("/");
+		return;
+	}
 
-    // Don't care for a preceding delimiter
-    if (groupName.at(0) == delimiter.at(0)) ++start;
+	// Don't care for a preceding delimiter
+	if (groupName[0] == delimiter[0]) ++start;
 
-    while (end != std::string::npos)
-    {
-        end = groupName.find(delimiter, start);
+	while (end != std::string::npos)
+	{
+		end = groupName.find(delimiter, start);
 
-        // If at end, use length = maxLength.  Else use length = end - start.
-        _groupNames.push_back(delimiter + groupName.substr(start, (end == std::string::npos) ? std::string::npos : end - start));
+		// If at end, use length = maxLength.  Else use length = end - start.
+		_groupNames.push_back(delimiter + groupName.substr(start, (end == std::string::npos) ? std::string::npos : end - start));
 
-        // If at end, use start = maxSize.  Else use start = end + delimiter.
-        start = ((end > (std::string::npos - delimiter.size())) ? std::string::npos : end + delimiter.size());
-    }
+		// If at end, use start = maxSize.  Else use start = end + delimiter.
+		start = ((end > (std::string::npos - delimiter.size())) ? std::string::npos : end + delimiter.size());
+	}
+}
+
+
+void HDF5Base::pushGroup(const std::string& groupName)
+{
+	_groupNames.push_back("/" + groupName);
+}
+
+
+void HDF5Base::popGroup()
+{
+	_groupNames.pop_back();
 }
 
 
 void HDF5Base::openGroup(bool forceCreation)
 {
-    std::string dynName;
-    for (std::vector<std::string>::const_iterator it = _groupNames.begin(); it < _groupNames.end(); ++it)
-    {
-        dynName += *it;
-        try {
-            _groupsOpened.push(_file.openGroup(dynName));
-        } catch (H5::Exception& e) {
-            if (forceCreation)
-                _groupsOpened.push(_file.createGroup(dynName));
-            else
-                throw (H5::GroupIException(CURRENT_FUNCTION, "Group '" + dynName + "' doesn't exist in file"));
-        }
-    }
+	std::string dynName;
+	for (std::vector<std::string>::const_iterator it = _groupNames.begin(); it < _groupNames.end(); ++it)
+	{
+		dynName += *it;
+		hid_t grp = H5Gopen2(_file, dynName.c_str(), H5P_DEFAULT);
+		if (grp >= 0)
+			_groupsOpened.push(grp);
+		else if (forceCreation)
+			_groupsOpened.push(H5Gcreate2(_file, dynName.c_str(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+		else
+			throw IOException("Group '" + dynName + "' doesn't exist in file");
+	}
 }
 
 
 void HDF5Base::closeGroup()
 {
-    while (_groupsOpened.size() >= 1)
-    {
-        _groupsOpened.top().close();
-        _groupsOpened.pop();
-    }
+	while (_groupsOpened.size() >= 1)
+	{
+		H5Gclose(_groupsOpened.top());
+		_groupsOpened.pop();
+	}
 }
-
 
 }  // namespace casema
 

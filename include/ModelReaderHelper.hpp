@@ -64,10 +64,6 @@ namespace casema
         {
             std::cout << "ERROR: " << e.what() << std::endl;
         }
-        catch (const H5::Exception& e)
-        {
-            std::cout << "ERROR: " << e.getFuncName() << ": " << e.getDetailMsg() << std::endl;
-        }
 
         return false;
     }

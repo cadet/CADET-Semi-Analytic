@@ -10,12 +10,6 @@
 //  are made available under the terms of the GNU Public License v3.0 (or, at
 //  your option, any later version) which accompanies this distribution, and
 //  is available at http://www.gnu.org/licenses/gpl.html
-//
-//  This file is taken from the CADET core project. The authors of this very
-//  file are listed in the copyright notice below:
-//  Copyright © 2008-2015: Eric von Lieres¹, Joel Andersson¹,
-//                         Andreas Puettmann¹, Sebastian Schnittert¹,
-//                         Samuel Leweke¹
 // =============================================================================
 
 #ifndef HDF5READER_HPP_
@@ -23,8 +17,6 @@
 
 #include <vector>
 #include <string>
-
-#include <H5Cpp.h>
 
 #include "HDF5Base.hpp"
 
@@ -34,44 +26,29 @@ namespace casema
 class HDF5Reader : public HDF5Base
 {
 public:
-    /// \brief Constructor
-    HDF5Reader();
+	/// \brief Constructor
+	HDF5Reader();
 
-    /// \brief Destructor
-    ~HDF5Reader();
+	/// \brief Destructor
+	~HDF5Reader();
 
-//    /// \brief Read data as a tensor from a dataset
-//    template <typename T>
-//    T tensor(const std::string& dataSetName) throw (H5::Exception);
-//
-//    /// \brief Convenience wrapper for reading matrices
-//    template <typename T>
-//    T matrix(const std::string& dataSetName);
+	/// \brief Convenience wrapper for reading vectors
+	template <typename T>
+	std::vector<T> vector(const std::string& dataSetName);
 
-    /// \brief Convenience wrapper for reading vectors
-    template <typename T>
-    std::vector<T> vector(const std::string& dataSetName);
-
-    /// \brief Convenience wrapper for reading scalars
-    template <typename T>
-    T scalar(const std::string& dataSetName, size_t position = 0);
+	/// \brief Convenience wrapper for reading scalars
+	template <typename T>
+	T scalar(const std::string& dataSetName, size_t position = 0);
 
 private:
-    template <typename T>
-    std::vector<T> read(const std::string& dataSetName);
+	template <typename T>
+	std::vector<T> read(const std::string& dataSetName, hid_t dataType);
 };
 
 
+HDF5Reader::HDF5Reader() { }
 
-
-// ====================================================================================================================
-//   IMPLEMENTATION PART
-// ====================================================================================================================
-
-
-HDF5Reader::HDF5Reader() {}
-
-HDF5Reader::~HDF5Reader() {}
+HDF5Reader::~HDF5Reader() { }
 
 
 // ============================================================================================================
@@ -81,70 +58,95 @@ HDF5Reader::~HDF5Reader() {}
 template <>
 std::vector<double> HDF5Reader::vector<double>(const std::string& dataSetName)
 {
-    return read<double>(dataSetName);
+	return read<double>(dataSetName, H5T_NATIVE_DOUBLE);
 }
 
-// Integer specialization of vector()
+// Integer specializations of vector()
 template <>
 std::vector<int> HDF5Reader::vector<int>(const std::string& dataSetName)
 {
-    return read<int>(dataSetName);
+	return read<int>(dataSetName, H5T_NATIVE_INT);
+}
+
+template <>
+std::vector<uint64_t> HDF5Reader::vector<uint64_t>(const std::string& dataSetName)
+{
+	return read<uint64_t>(dataSetName, H5T_NATIVE_UINT64);
 }
 
 // std::string specialization of vector()
 template <>
 std::vector<std::string> HDF5Reader::vector<std::string>(const std::string& dataSetName)
 {
-    // Get the dataset we want to read from
-    openGroup();
-    _dataSet = _groupsOpened.top().openDataSet(dataSetName);
-    closeGroup();
+	// Get the dataset we want to read from
+	openGroup();
+	const hid_t dataSet = H5Dopen2(_groupsOpened.top(), dataSetName.c_str(), H5P_DEFAULT);
+	closeGroup();
 
-    // Determine the datatype
-    _dataType = _dataSet.getDataType();
-    size_t bufSize = _dataSet.getSpace().getSimpleExtentNpoints();
+	// Determine the datatype and allocate buffer
+	const hid_t dataType = H5Dget_type(dataSet);
+	const hid_t dataSpace = H5Dget_space(dataSet);
+	const size_t bufSize = H5Sget_simple_extent_npoints(dataSpace);
 
-    std::vector<std::string> stringVector;
-    if (_dataSet.getDataType().isVariableStr())
-    {
-        char** buffer  = new char*[bufSize];
+	std::vector<std::string> stringVector;
 
-        // Read data from file and write it to buffer
-        _dataSet.read(buffer, _dataType);
+	if (bufSize == 0)
+	{
+		H5Tclose(dataType);
+		H5Sclose(dataSpace);
+		H5Dclose(dataSet);
+		return stringVector;
+	}
 
-        // Copy read c-strings to a vector of std::strings
-        for (size_t i = 0; i < bufSize; ++i)
-            stringVector.push_back(std::string(buffer[i]));
+	if (H5Tis_variable_str(dataType))
+	{
+		char** buffer  = new char*[bufSize];
 
-        // Free memory alloc'd by the variable length read mechanism
-        _dataSet.vlenReclaim((void*)buffer, _dataType, _dataSet.getSpace());
-        delete [] buffer;
-    }
-    else
-    {
-        // dont know how to get the length of each string, if multiple strings were stored in the dataset...
-        if (bufSize > 1) throw (H5::Exception(CURRENT_FUNCTION, "You can only read fixed length strings through scalar()"));
+		const hid_t memType = H5Tcopy(H5T_C_S1);
+		H5Tset_size(memType, H5T_VARIABLE);
 
-        char* buffer = new char[_dataType.getSize()];
+		// Read data from file and write it to buffer
+		H5Dread(dataSet, memType, H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer);
 
-        // Read data from file and write it to buffer
-        _dataSet.read(buffer, _dataType);
+		// Copy read c-strings to a vector of std::strings
+		for (size_t i = 0; i < bufSize; ++i)
+			stringVector.push_back(std::string(buffer[i]));
 
-        stringVector.push_back(std::string(buffer));
-        delete [] buffer;
-    }
-    
-    _dataType.close();
-    _dataSet.close();
+		// Free memory alloc'd by the variable length read mechanism
+		H5Dvlen_reclaim(dataType, dataSpace, H5P_DEFAULT, buffer);
+		H5Tclose(memType);
+		delete[] buffer;
+	}
+	else
+	{
+		const size_t strLen = H5Tget_size(dataType) + 1; // Add 1 for null terminator (maybe unnecessary)
+		char* buffer = new char[strLen * bufSize];
 
-    return stringVector;
+		const hid_t memType = H5Tcopy(H5T_C_S1);
+		H5Tset_size(memType, strLen);
+
+		// Read data from file, write it to buffer and copy the items to vector
+		H5Dread(dataSet, memType, H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer);
+		for (size_t i = 0; i < bufSize; ++i)
+			stringVector.push_back(std::string(buffer + i * strLen));
+
+		delete[] buffer;
+
+		H5Tclose(memType);
+	}
+	
+	H5Tclose(dataType);
+	H5Sclose(dataSpace);
+	H5Dclose(dataSet);
+
+	return stringVector;
 }
 
 // Template that matches on every unsupported type and throws an exception
 template <typename T>
 std::vector<T> HDF5Reader::vector(const std::string& dataSetName)
 {
-    throw (H5::Exception(CURRENT_FUNCTION, "You may not try to read an unsupported type"));
+	throw IOException("You may not try to read an unsupported type");
 }
 // ============================================================================================================
 
@@ -152,35 +154,42 @@ std::vector<T> HDF5Reader::vector(const std::string& dataSetName)
 template <typename T>
 T HDF5Reader::scalar(const std::string& dataSetName, size_t position)
 {
-    return vector<T>(dataSetName).at(position);
+	return vector<T>(dataSetName).at(position);
 }
 
 
 template <typename T>
-std::vector<T> HDF5Reader::read(const std::string& dataSetName)
+std::vector<T> HDF5Reader::read(const std::string& dataSetName, hid_t memType)
 {
-    // Get the dataset we want to read from
-    openGroup();
-    _dataSet = _groupsOpened.top().openDataSet(dataSetName);
-    closeGroup();
+	// Get the dataset we want to read from
+	openGroup();
+	const hid_t dataSet = H5Dopen2(_groupsOpened.top(), dataSetName.c_str(), H5P_DEFAULT);
+	closeGroup();
 
-    size_t bufSize = _dataSet.getSpace().getSimpleExtentNpoints();
-    T* buffer = new T[bufSize];
+	// Determine the datatype and allocate buffer
+	const hid_t dataType = H5Dget_type(dataSet);
+	const hid_t dataSpace = H5Dget_space(dataSet);
+	const size_t bufSize = H5Sget_simple_extent_npoints(dataSpace);
 
-    // Determine the datatype
-    _dataType = _dataSet.getDataType();
+	if (bufSize == 0)
+	{
+		H5Tclose(dataType);
+		H5Sclose(dataSpace);
+		H5Dclose(dataSet);
+		return std::vector<T>();
+	}
 
-    // Read data from file and write it to buffer
-    _dataSet.read(buffer, _dataType);
-    std::vector<T> bufferVector(buffer, buffer + bufSize);
-    delete [] buffer;
+	std::vector<T> buffer(bufSize);
 
-    _dataType.close();
-    _dataSet.close();
+	// Read data from file and write it to buffer
+	H5Dread(dataSet, memType, H5S_ALL, H5S_ALL, H5P_DEFAULT, buffer.data());
+	
+	H5Tclose(dataType);
+	H5Sclose(dataSpace);
+	H5Dclose(dataSet);
 
-    return bufferVector;
+	return buffer;
 }
-
 
 }  // namespace casema
 

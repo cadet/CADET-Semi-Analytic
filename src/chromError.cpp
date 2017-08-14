@@ -263,10 +263,6 @@ int main(int argc, char** argv)
         {
             std::cout << "ERROR reading " + (*it) + ": " << e.what() << std::endl;
         }
-        catch (const H5::Exception& e)
-        {
-            std::cout << "ERROR reading " + (*it) + ": " << e.getFuncName() << ": " << e.getDetailMsg() << std::endl;
-        }
     }
 
     std::cout << "Read " << data.size() << " datasets" << std::endl;
