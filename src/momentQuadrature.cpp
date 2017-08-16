@@ -21,7 +21,9 @@
 #include <algorithm>
 #include <fstream>
 
-#include <omp.h>
+#ifdef _OPENMP
+	#include <omp.h>
+#endif
 
 #include "MPReal.hpp"
 #include <quadpack/workspace.hpp>
@@ -390,8 +392,10 @@ int main(int argc, char** argv)
 	}
 
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(opts.precision));
+#ifdef _OPENMP
 	omp_set_num_threads(opts.numThreads);
-
+#endif
+	
 	// Set default output precision
 	if (opts.outPrecision == 0)
 		opts.outPrecision = opts.precision;
