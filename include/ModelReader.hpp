@@ -18,6 +18,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <stdexcept>
 
 #include "ModelData.hpp"
 
@@ -227,6 +228,8 @@ namespace casema
 						data.modelType = LumpedRateModelWithPores;
 					else if (uoType == "LUMPED_RATE_MODEL_WITHOUT_PORES")
 						data.modelType = LumpedRateModelWithoutPores;
+					else
+						throw std::domain_error("Unsupported unit operation type " + uoType);
 
 					const bool hasPores = (uoType != "LUMPED_RATE_MODEL_WITHOUT_PORES");
 
@@ -247,7 +250,7 @@ namespace casema
 					const std::vector<double> initialLiquid = reader.template vector<double>("INIT_C");
 					data.initialLiquidConcentration.reserve(data.nComponents);
 					data.initialSolidConcentration.reserve(data.nComponents);
-						for(std::size_t i = 0; i < data.nComponents; ++i)
+					for (std::size_t i = 0; i < data.nComponents; ++i)
 					{
 						data.initialSolidConcentration.push_back(real_t(initialSolid[i]));
 						data.initialLiquidConcentration.push_back(real_t(initialLiquid[i]));
@@ -269,7 +272,7 @@ namespace casema
 						const std::vector<double> parDiff = reader.template vector<double>("PAR_DIFFUSION");
 						data.particleDiffusion.reserve(data.nComponents);
 						data.surfaceDiffusion.reserve(data.nComponents);
-						for(std::size_t i = 0; i < data.nComponents; ++i)
+						for (std::size_t i = 0; i < data.nComponents; ++i)
 						{
 							data.particleDiffusion.push_back(real_t(parDiff[i]));
 							data.surfaceDiffusion.push_back(real_t(parSurfDiff[i]));
@@ -283,17 +286,23 @@ namespace casema
 
 						if (adsModel == "LINEAR")
 						{
+							reader.pushGroup("adsorption");
+
 							data.bindingModel = LINEAR;
+							data.kineticBinding = reader.template scalar<int>("IS_KINETIC");
+
 							data.linearKA.reserve(data.nComponents);
 							data.linearKD.reserve(data.nComponents);
 							const std::vector<double> linKA = reader.template vector<double>("LIN_KA");
 							const std::vector<double> linKD = reader.template vector<double>("LIN_KD");
 
-							for(std::size_t i = 0; i < data.nComponents; ++i)
+							for (std::size_t i = 0; i < data.nComponents; ++i)
 							{
 								data.linearKA.push_back(real_t(linKA[i]));
 								data.linearKD.push_back(real_t(linKD[i]));
 							}
+
+							reader.popGroup();
 						}
 						else if ((adsModel == "DUMMY") || (adsModel == "NONE"))
 						{
