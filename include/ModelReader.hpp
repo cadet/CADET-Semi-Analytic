@@ -237,13 +237,28 @@ namespace casema
 					data.colDispersion = real_t(reader.template scalar<double>("COL_DISPERSION"));
 					data.velocity = real_t(reader.template scalar<double>("VELOCITY"));
 					data.colLength = real_t(reader.template scalar<double>("COL_LENGTH"));
-					data.colPorosity = real_t(reader.template scalar<double>("COL_POROSITY"));
-					data.parPorosity = real_t(reader.template scalar<double>("PAR_POROSITY"));
 
 					if (hasPores)
+					{
+						data.colPorosity = real_t(reader.template scalar<double>("COL_POROSITY"));
+						data.parPorosity = real_t(reader.template scalar<double>("PAR_POROSITY"));
 						data.parRadius = real_t(reader.template scalar<double>("PAR_RADIUS"));
+						data.totPorosity = real_t(-1);
+					}
 					else
+					{
 						data.parRadius = real_t(0);
+						data.colPorosity = 0.0;
+						data.parPorosity = 0.0;
+						if (reader.exists("TOTAL_POROSITY"))
+							data.totPorosity = real_t(reader.template scalar<double>("TOTAL_POROSITY"));
+						else
+						{
+							data.colPorosity = real_t(reader.template scalar<double>("COL_POROSITY"));
+							data.parPorosity = real_t(reader.template scalar<double>("PAR_POROSITY"));
+							data.totPorosity = real_t(-1);
+						}
+					}
 
 					// Vectorial parameters
 					const std::vector<double> initialSolid = reader.template vector<double>("INIT_Q");

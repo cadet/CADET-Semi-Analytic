@@ -41,6 +41,7 @@ namespace casema
 		real_t colDispersion;
 		real_t colLength;
 		real_t colPorosity;
+		real_t totPorosity;
 
 		std::vector<real_t> filmDiffusion;
 		std::vector<real_t> particleDiffusion;
@@ -67,7 +68,13 @@ namespace casema
 		bool writeUserTimes;
 		std::vector<real_t> outletTimes;
 
-		inline real_t totalPorosity() const { return colPorosity + (real_t(1) - colPorosity) * parPorosity; }
+		inline real_t totalPorosity() const
+		{
+			if (totPorosity < 0.0)
+				return colPorosity + (real_t(1) - colPorosity) * parPorosity;
+			else
+				return totPorosity;
+		}
 	};
 
 	template <typename real_t>
