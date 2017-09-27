@@ -1,26 +1,28 @@
-// $Id: color_symmetric.hpp 3565 2015-01-07 17:10:23Z bradbell $
-# ifndef CPPAD_COLOR_SYMMETRIC_INCLUDED
-# define CPPAD_COLOR_SYMMETRIC_INCLUDED
+# ifndef CPPAD_LOCAL_COLOR_SYMMETRIC_HPP
+# define CPPAD_LOCAL_COLOR_SYMMETRIC_HPP
 
 # include <cppad/configure.hpp>
+# include <cppad/local/cppad_colpack.hpp>
 
 /* --------------------------------------------------------------------------
-CppAD: C++ Algorithmic Differentiation: Copyright (C) 2003-15 Bradley M. Bell
+CppAD: C++ Algorithmic Differentiation: Copyright (C) 2003-17 Bradley M. Bell
 
 CppAD is distributed under multiple licenses. This distribution is under
-the terms of the 
+the terms of the
                     GNU General Public License Version 3.
 
 A copy of this license is included in the COPYING file of this distribution.
 Please visit http://www.coin-or.org/CppAD/ for information on other licenses.
 -------------------------------------------------------------------------- */
+
+namespace CppAD { namespace local { // BEGIN_CPPAD_LOCAL_NAMESPACE
 /*!
 \file color_symmetric.hpp
 Coloring algorithm for a symmetric sparse matrix.
 */
 // --------------------------------------------------------------------------
 /*!
-CppAD algorithm for determining which rows of a symmetric sparse matrix can be 
+CppAD algorithm for determining which rows of a symmetric sparse matrix can be
 computed together.
 
 \tparam VectorSize
@@ -43,30 +45,28 @@ add element \c e to set with index \c s.
 
 \param pattern [in]
 Is a representation of the sparsity pattern for the matrix.
-Note that color_symmetric does not change the values in pattern,
-but it is not const because its iterator facility modifies some of its
-internal data.
 \n
 <code>m = pattern.n_set()</code>
 \n
 sets m to the number of rows (and columns) in the sparse matrix.
-All of the row indices are less than this value. 
+All of the row indices are less than this value.
 \n
 <code>n = pattern.end()</code>
 \n
 sets n to the number of columns in the sparse matrix
 (which must be equal to the number of rows).
-All of the column indices are less than this value. 
+All of the column indices are less than this value.
 \n
-<code>pattern.begin(i)</code>
-instructs the iterator facility to start iterating over
+<code>VectorSet::const_iterator itr(pattern, i)</code>
+constructs an iterator that starts iterating over
 columns in the i-th row of the sparsity pattern.
 \n
-<code>j = pattern.next_element()</code>
-Sets j to the next possibly non-zero column 
-in the row specified by the previous call to <code>pattern.begin</code>.
-If there are no more such columns, the value
-<code>pattern.end()</code> is returned.
+<code>j = *itr</code>
+Sets j to the next possibly non-zero column.
+\n
+<code>++itr</code>
+Advances to the next possibly non-zero column.
+\n
 
 \param row [in/out]
 is a vector specifying which row indices to compute.
@@ -96,12 +96,12 @@ So the the the color for row[k] can be used to compute entry
 is a vector with size m.
 The input value of its elements does not matter.
 Upon return, it is a coloring for the rows of the sparse matrix.
-Note that if color[i] == m, then ther is no index k for which
+Note that if color[i] == m, then there is no index k for which
 row[k] == i (for the return value of row).
 \n
 \n
 Fix any (i, j) in the sparsity pattern.
-Suppose that there is a row index i1 with 
+Suppose that there is a row index i1 with
 i1 != i, color[i1] == color[i] and (i1, j) is in the sparsity pattern.
 If follows that for all j1 with
 j1 != j and color[j1] == color[j],
@@ -113,7 +113,7 @@ the maximum, with respect to k, of <code>color[ row[k] ]</code>.
 */
 template <class VectorSet>
 void color_symmetric_cppad(
-	VectorSet&              pattern   ,
+	const VectorSet&        pattern   ,
 	CppAD::vector<size_t>&  row       ,
 	CppAD::vector<size_t>&  col       ,
 	CppAD::vector<size_t>&  color     )
@@ -173,7 +173,7 @@ void color_symmetric_cppad(
 			forbidden[c2] = false;
 
 		// -----------------------------------------------------
-		// Forbid grouping with rows that would destroy results that are 
+		// Forbid grouping with rows that would destroy results that are
 		// needed for this row.
 		itr1 = pair_needed[i1].begin();
 		while( itr1 != pair_needed[i1].end() )
@@ -182,13 +182,13 @@ void color_symmetric_cppad(
 
 			// Forbid rows i2 != i1 that have non-zero sparsity at (i2, j1).
 			// Note that this is the same as non-zero sparsity at (j1, i2)
-			pattern.begin(j1);
-			i2 = pattern.next_element();
+			typename VectorSet::const_iterator pattern_itr(pattern, j1);
+			i2 = *pattern_itr;
 			while( i2 != pattern.end() )
 			{	c2 = color[i2];
 				if( c2 < c1 )
 					forbidden[c2] = true;
-				i2 = pattern.next_element();
+				i2 = *(++pattern_itr);
 			}
 			itr1++;
 		}
@@ -232,7 +232,7 @@ void color_symmetric_cppad(
 		}
 	}
 
-	// determine which sparsity entries need to be reflected 
+	// determine which sparsity entries need to be reflected
 	for(k1 = 0; k1 < row.size(); k1++)
 	{	i1   = row[k1];
 		j1   = col[k1];
@@ -251,14 +251,14 @@ void color_symmetric_cppad(
 
 // --------------------------------------------------------------------------
 /*!
-Colpack algorithm for determining which rows of a symmetric sparse matrix 
+Colpack algorithm for determining which rows of a symmetric sparse matrix
 can be computed together.
 
-\copydetails color_symmetric_cppad
+\copydetails CppAD::local::color_symmetric_cppad
 */
 template <class VectorSet>
 void color_symmetric_colpack(
-	VectorSet&              pattern   ,
+	const VectorSet&        pattern   ,
 	CppAD::vector<size_t>&  row       ,
 	CppAD::vector<size_t>&  col       ,
 	CppAD::vector<size_t>&  color     )
@@ -267,7 +267,7 @@ void color_symmetric_colpack(
 	CPPAD_ASSERT_UNKNOWN(false);
 	return;
 # else
-	size_t i, j, k;	
+	size_t i, j, k;
 	size_t m = pattern.n_set();
 	CPPAD_ASSERT_UNKNOWN( m == pattern.end() );
 	CPPAD_ASSERT_UNKNOWN( row.size() == col.size() );
@@ -277,11 +277,11 @@ void color_symmetric_colpack(
 	size_t n_nonzero_total = 0;
 	for(i = 0; i < m; i++)
 	{	n_nonzero[i] = 0;
-		pattern.begin(i);
-		j = pattern.next_element();
+		typename VectorSet::const_iterator pattern_itr(pattern, i);
+		j = *pattern_itr;
 		while( j != pattern.end() )
 		{	n_nonzero[i]++;
-			j = pattern.next_element();
+			j = *(++pattern_itr);
 		}
 		n_nonzero_total += n_nonzero[i];
 	}
@@ -292,13 +292,22 @@ void color_symmetric_colpack(
 	size_t i_memory = 0;
 	for(i = 0; i < m; i++)
 	{	adolc_pattern[i]    = adolc_memory.data() + i_memory;
-		adolc_pattern[i][0] = n_nonzero[i];
-		pattern.begin(i);
-		j = pattern.next_element();
+		CPPAD_ASSERT_KNOWN(
+			std::numeric_limits<unsigned int>::max() >= n_nonzero[i],
+			"Matrix is too large for colpack"
+		);
+		adolc_pattern[i][0] = static_cast<unsigned int>( n_nonzero[i] );
+		typename VectorSet::const_iterator pattern_itr(pattern, i);
+		j = *pattern_itr;
 		k = 1;
 		while(j != pattern.end() )
-		{	adolc_pattern[i][k++] = j;
-			j = pattern.next_element();
+		{
+			CPPAD_ASSERT_KNOWN(
+				std::numeric_limits<unsigned int>::max() >= j,
+				"Matrix is too large for colpack"
+			);
+			adolc_pattern[i][k++] = static_cast<unsigned int>( j );
+			j = *(++pattern_itr);
 		}
 		CPPAD_ASSERT_UNKNOWN( k == 1 + n_nonzero[i] );
 		i_memory += k;
@@ -309,7 +318,7 @@ void color_symmetric_colpack(
 	// ColPack/ColPackHeaders.h has as 'using namespace std' at global level.
 	cppad_colpack_symmetric(color, m, adolc_pattern);
 
-	// determine which sparsity entries need to be reflected 
+	// determine which sparsity entries need to be reflected
 	size_t i1, i2, j1, j2, k1, k2;
 	for(k1 = 0; k1 < row.size(); k1++)
 	{	i1 = row[k1];
@@ -317,7 +326,7 @@ void color_symmetric_colpack(
 		bool reflect = false;
 		for(i2 = 0; i2 < m; i2++) if( (i1 != i2) & (color[i1]==color[i2]) )
 		{	for(k2 = 1; k2 <= adolc_pattern[i2][0]; k2++)
-			{	j2 = adolc_pattern[i2][k2];	
+			{	j2 = adolc_pattern[i2][k2];
 				reflect |= (j1 == j2);
 			}
 		}
@@ -329,5 +338,7 @@ void color_symmetric_colpack(
 	return;
 # endif // CPPAD_HAS_COLPACK
 }
+
+} } // END_CPPAD_LOCAL_NAMESPACE
 
 # endif

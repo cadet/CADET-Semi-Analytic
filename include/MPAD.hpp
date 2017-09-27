@@ -130,6 +130,7 @@ namespace CppAD
 	inline int Integer(const mpfr::mpreal& x)
 	{	return static_cast<int>(x.toLong()); }
 
+	CPPAD_AZMUL( mpfr::mpreal )
 
 	inline bool GreaterThanZero(const mpfr::mpreal& x)
 	{	return x > 0.; }
@@ -180,6 +181,8 @@ namespace CppAD
 		// maximum finite value
 		static mpfr::mpreal max(void)
 		{	return std::numeric_limits<mpfr::mpreal>::max(); }
+		static mpfr::mpreal quiet_NaN(void)
+		{	return std::numeric_limits<mpfr::mpreal>::quiet_NaN(); }
 	};
 	// deprecated machine epsilon
 	template <> 

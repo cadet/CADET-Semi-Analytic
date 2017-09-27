@@ -1,11 +1,10 @@
-/* $Id: eigen_plugin.hpp 2572 2012-11-15 19:43:06Z bradbell $ */
-# ifndef CPPAD_EIGEN_PLUGIN_INCLUDED
-# define CPPAD_EIGEN_PLUGIN_INCLUDED
+# ifndef CPPAD_EXAMPLE_EIGEN_PLUGIN_HPP
+# define CPPAD_EXAMPLE_EIGEN_PLUGIN_HPP
 /* --------------------------------------------------------------------------
-CppAD: C++ Algorithmic Differentiation: Copyright (C) 2003-12 Bradley M. Bell
+CppAD: C++ Algorithmic Differentiation: Copyright (C) 2003-17 Bradley M. Bell
 
 CppAD is distributed under multiple licenses. This distribution is under
-the terms of the 
+the terms of the
                     GNU General Public License Version 3.
 
 A copy of this license is included in the COPYING file of this distribution.
@@ -19,10 +18,10 @@ $spell
 $$
 
 $section Source Code for eigen_plugin.hpp$$
-$codep */
-// Declaration needed so an Eigen vector is a simple vector
+$srccode%cpp% */
+// Declaration needed, before eigen-3.3.3, so Eigen vector is a simple vector
 typedef Scalar value_type;
-/* $$
+/* %$$
 $end
 */
 # endif

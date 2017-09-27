@@ -1,12 +1,12 @@
-/* $Id: comp_op.hpp 3607 2015-01-20 16:20:41Z bradbell $ */
-# ifndef CPPAD_COMP_OP_INCLUDED
-# define CPPAD_COMP_OP_INCLUDED
+// $Id: comp_op.hpp 3865 2017-01-19 01:57:55Z bradbell $
+# ifndef CPPAD_LOCAL_COMP_OP_HPP
+# define CPPAD_LOCAL_COMP_OP_HPP
 
 /* --------------------------------------------------------------------------
-CppAD: C++ Algorithmic Differentiation: Copyright (C) 2003-15 Bradley M. Bell
+CppAD: C++ Algorithmic Differentiation: Copyright (C) 2003-17 Bradley M. Bell
 
 CppAD is distributed under multiple licenses. This distribution is under
-the terms of the 
+the terms of the
                     GNU General Public License Version 3.
 
 A copy of this license is included in the COPYING file of this distribution.
@@ -14,7 +14,7 @@ Please visit http://www.coin-or.org/CppAD/ for information on other licenses.
 -------------------------------------------------------------------------- */
 
 
-namespace CppAD { // BEGIN_CPPAD_NAMESPACE
+namespace CppAD { namespace local { // BEGIN_CPPAD_LOCAL_NAMESPACE
 /*!
 \file comp_op.hpp
 Zero order forward mode check how many comparisons changed.
@@ -104,7 +104,7 @@ It the condition is not true, ths counter is incremented by one.
 
 \param arg
 taylor[ arg[0] * cap_order + 0 ] is the zero order Taylor coefficient
-for the left operand and  
+for the left operand and
 taylor[ arg[1] * cap_order + 0 ] is the zero order Taylor coefficient
 for the right operand.
 
@@ -139,7 +139,7 @@ inline void forward_levv_op_0(
 /*!
 Zero order forward mode comparison check that left < right
 
-\copydetails forward_lepv_op_0
+\copydetails CppAD::local::forward_lepv_op_0
 */
 template <class Base>
 inline void forward_ltpv_op_0(
@@ -162,7 +162,7 @@ inline void forward_ltpv_op_0(
 /*!
 Zero order forward mode comparison check that left < right
 
-\copydetails forward_levp_op_0
+\copydetails CppAD::local::forward_levp_op_0
 */
 template <class Base>
 inline void forward_ltvp_op_0(
@@ -185,7 +185,7 @@ inline void forward_ltvp_op_0(
 /*!
 Zero order forward mode comparison check that left < right
 
-\copydetails forward_levv_op_0
+\copydetails CppAD::local::forward_levv_op_0
 */
 template <class Base>
 inline void forward_ltvv_op_0(
@@ -209,7 +209,7 @@ inline void forward_ltvv_op_0(
 /*!
 Zero order forward mode comparison check that left == right
 
-\copydetails forward_lepv_op_0
+\copydetails CppAD::local::forward_lepv_op_0
 */
 template <class Base>
 inline void forward_eqpv_op_0(
@@ -232,7 +232,7 @@ inline void forward_eqpv_op_0(
 /*!
 Zero order forward mode comparison check that left == right
 
-\copydetails forward_levv_op_0
+\copydetails CppAD::local::forward_levv_op_0
 */
 template <class Base>
 inline void forward_eqvv_op_0(
@@ -256,7 +256,7 @@ inline void forward_eqvv_op_0(
 /*!
 Zero order forward mode comparison check that left != right
 
-\copydetails forward_lepv_op_0
+\copydetails CppAD::local::forward_lepv_op_0
 */
 template <class Base>
 inline void forward_nepv_op_0(
@@ -279,7 +279,7 @@ inline void forward_nepv_op_0(
 /*!
 Zero order forward mode comparison check that left != right
 
-\copydetails forward_levv_op_0
+\copydetails CppAD::local::forward_levv_op_0
 */
 template <class Base>
 inline void forward_nevv_op_0(
@@ -301,5 +301,5 @@ inline void forward_nevv_op_0(
 }
 
 
-} // END_CPPAD_NAMESPACE
+} } // END_CPPAD_LOCAL_NAMESPACE
 # endif

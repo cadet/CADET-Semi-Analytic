@@ -1,11 +1,11 @@
-/* $Id: solve_result.hpp 3232 2014-04-27 15:38:21Z bradbell $ */
-# ifndef CPPAD_SOLVE_RESULT_INCLUDED
-# define CPPAD_SOLVE_RESULT_INCLUDED
+// $Id: solve_result.hpp 3804 2016-03-20 15:08:46Z bradbell $
+# ifndef CPPAD_IPOPT_SOLVE_RESULT_HPP
+# define CPPAD_IPOPT_SOLVE_RESULT_HPP
 /* --------------------------------------------------------------------------
-CppAD: C++ Algorithmic Differentiation: Copyright (C) 2003-14 Bradley M. Bell
+CppAD: C++ Algorithmic Differentiation: Copyright (C) 2003-16 Bradley M. Bell
 
 CppAD is distributed under multiple licenses. This distribution is under
-the terms of the 
+the terms of the
                     GNU General Public License Version 3.
 
 A copy of this license is included in the COPYING file of this distribution.
@@ -26,8 +26,8 @@ Class that contains information about solve problem result
 a simple vector with elements of type double
 */
 template <class Dvector>
-class solve_result 
-{	
+class solve_result
+{
 public:
 	/// possible values for the result status
 	enum status_type {

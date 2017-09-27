@@ -1,12 +1,11 @@
-/* $Id: det_grad_33.hpp 2506 2012-10-24 19:36:49Z bradbell $ */
-# ifndef CPPAD_DET_GRAD_33_INCLUDED
-# define CPPAD_DET_GRAD_33_INCLUDED
+# ifndef CPPAD_SPEED_DET_GRAD_33_HPP
+# define CPPAD_SPEED_DET_GRAD_33_HPP
 
 /* --------------------------------------------------------------------------
-CppAD: C++ Algorithmic Differentiation: Copyright (C) 2003-12 Bradley M. Bell
+CppAD: C++ Algorithmic Differentiation: Copyright (C) 2003-17 Bradley M. Bell
 
 CppAD is distributed under multiple licenses. This distribution is under
-the terms of the 
+the terms of the
                     GNU General Public License Version 3.
 
 A copy of this license is included in the COPYING file of this distribution.
@@ -18,18 +17,15 @@ $spell
 	cppad
 	CppAD
 	det
-	cppad.hpp
 	namespace
 	const
 	bool
+	hpp
 $$
 
-$section Check Gradient of Determinant of 3 by 3 matrix$$ 
+$section Check Gradient of Determinant of 3 by 3 matrix$$
+$mindex det_grad_33 correct$$
 
-$index det_grad_33$$
-$index determinant, check correct$$
-$index correct, determinant check$$
-$index check, determinant correct$$
 
 $head Syntax$$
 $codei%# include <cppad/speed/det_grad_33.hpp>
@@ -37,17 +33,14 @@ $codei%# include <cppad/speed/det_grad_33.hpp>
 $icode%ok% = det_grad_33(%x%, %g%)%$$
 
 $head Purpose$$
-This routine can be used to check a method for computing the 
+This routine can be used to check a method for computing the
 gradient of the determinant of a matrix.
 
 $head Inclusion$$
 The template function $code det_grad_33$$ is defined in the $code CppAD$$
-namespace by including 
-the file $code cppad/speed/det_grad_33.hpp$$ 
+namespace by including
+the file $code cppad/speed/det_grad_33.hpp$$
 (relative to the CppAD distribution directory).
-It is only intended for example and testing purposes, 
-so it is not automatically included by
-$cref/cppad.hpp/cppad/$$.
 
 $head x$$
 The argument $icode x$$ has prototype
@@ -71,7 +64,7 @@ $latex \[
 \] $$
 
 $head Vector$$
-If $icode y$$ is a $icode Vector$$ object, 
+If $icode y$$ is a $icode Vector$$ object,
 it must support the syntax
 $codei%
 	%y%[%i%]
@@ -86,7 +79,7 @@ The return value $icode ok$$ has prototype
 $codei%
 	bool %ok%
 %$$
-It is true, if the gradient $icode g$$ 
+It is true, if the gradient $icode g$$
 passes the test and false otherwise.
 
 $children%
@@ -94,7 +87,7 @@ $children%
 %$$
 
 $head Source Code$$
-The file 
+The file
 $cref det_grad_33.hpp$$
 contains the source code for this template function.
 
@@ -102,12 +95,15 @@ $end
 ------------------------------------------------------------------------------
 */
 // BEGIN C++
-# include <cppad/near_equal.hpp>
+# include <limits>
+# include <cppad/utility/near_equal.hpp>
 namespace CppAD {
 template <class Vector>
 	bool det_grad_33(const Vector &x, const Vector &g)
 	{	bool ok = true;
-	
+		typedef typename Vector::value_type Float;
+		Float eps = 10. * Float( std::numeric_limits<double>::epsilon() );
+
 		// use expansion by minors to compute the derivative by hand
 		double check[9];
 		check[0] = + ( x[4] * x[8] - x[5] * x[7] );
@@ -120,12 +116,11 @@ template <class Vector>
 		//
 		check[6] = + ( x[1] * x[5] - x[2] * x[4] );
 		check[7] = - ( x[0] * x[5] - x[2] * x[3] );
-		check[8] = + ( x[0] * x[4] - x[1] * x[3] ); 
+		check[8] = + ( x[0] * x[4] - x[1] * x[3] );
 		//
-		size_t i;
-		for(i = 0; i < 3 * 3; i++)
-			ok &= CppAD::NearEqual(check[i], g[i], 1e-10, 1e-10);
-		
+		for(size_t i = 0; i < 3 * 3; i++)
+			ok &= CppAD::NearEqual(check[i], g[i], eps, eps);
+
 		return ok;
 	}
 }
