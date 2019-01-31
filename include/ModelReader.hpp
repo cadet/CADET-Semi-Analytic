@@ -32,6 +32,7 @@ namespace casema
 		ModelData<real_t> readModelFileFormat2(reader_t& reader)
 		{
 			ModelData<real_t> data;
+			data.modelType = GeneralRateModel;
 
 			reader.setGroup(e2s(GRP_IN_MODEL));
 			s2e(reader.template scalar<std::string>(e2s(ADSORPTION_TYPE)), data.bindingModel);
