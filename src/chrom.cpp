@@ -59,6 +59,7 @@ struct ProgramOptions
 	real_t errorCons;
 	real_t error;
 	real_t errorWeight;
+	real_t axialPos;
 	std::string inFile;
 	std::string outFile;
 	std::size_t numThreads;
@@ -98,6 +99,7 @@ void writeMeta(std::ostream& os, const casema::ModelData<real_t>& model, casema:
 	os << "# Consistency error: " << opts.errorCons << "\n";
 	os << "# Error: " << opts.error << "\n";
 	os << "# Error weight: " << opts.errorWeight << std::endl;
+	os << "# Axial position in column: " << opts.axialPos << " (column length " << model.colLength << ")" << std::endl;
 }
 
 
@@ -147,7 +149,7 @@ std::vector<mpfr::mpreal> invert(const Model_t& model, const Inlet_t& inlet, con
 	Solution_t solution(model, inlet);
 	std::cout << solution.name() << std::endl;
 	casema::DurbinsMethod<mpfr::mpreal, mpfr::mpcomplex> durbin;
-	return durbin.invert(opts.precision, opts.summands, casema::maxSimulationTime(model), opts.sigma, model.outletTimes, timeOffset, solution);
+	return durbin.invert(opts.precision, opts.summands, casema::maxSimulationTime(model), opts.sigma, model.outletTimes, timeOffset, [&](const mpfr::mpcomplex& z) { return solution(z, opts.axialPos); });
 }
 
 
@@ -256,6 +258,7 @@ int main(int argc, char** argv)
 		cmd >> (new TCLAP::ValueArg<mpfr::mpreal>("a", "abscissa", "Abscissa in Durbin's method, used as safety margin if error (-e) is given", false, 0, "Float"))->storeIn(&opts.sigma);
 		cmd >> (new TCLAP::ValueArg<mpfr::mpreal>("e", "error", "Error threshold (default: 1e-10)", false, 1e-10, "Float"))->storeIn(&opts.error);
 		cmd >> (new TCLAP::ValueArg<mpfr::mpreal>("w", "weight", "Weight used to distribute error onto consistency and truncation (default: 0.5)", false, 0.5, "Float"))->storeIn(&opts.errorWeight);
+		cmd >> (new TCLAP::ValueArg<mpfr::mpreal>("z", "axialpos", "Axial position in the column (default: -1.0 = outlet)", false, -1.0, "Float"))->storeIn(&opts.axialPos);
 		cmd >> (new TCLAP::ValueArg<std::size_t>("n", "sum", "Maximum number of summands in Durbin's method", false, 0, "Int"))->storeIn(&opts.summands);
 
 		cmd >> (new TCLAP::ValueArg<std::string>("x", "extrapolation", "Use extrapolation methods (default: none)", false, std::string(), "Method1,Method2"))->storeIn(&opts.extraMethods);
@@ -307,6 +310,15 @@ int main(int argc, char** argv)
 				::mpfr_free_cache();
 				return 1;
 			}
+
+			if (opts.axialPos > model.colLength)
+			{
+				std::cout << "ERROR: Axial position (-z) is out of bounds (column length is " << model.colLength << ")" << std::endl;
+				::mpfr_free_cache();
+				return 1;
+			}
+			if (opts.axialPos < 0.0)
+				opts.axialPos = model.colLength;
 
 			std::cout << "Detected inlet: " << (casema::inletIsStep(model) ? "Step like" : "Bounded") << std::endl;
 			if (model.kineticBinding)
