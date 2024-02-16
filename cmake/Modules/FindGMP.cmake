@@ -36,6 +36,17 @@ else()
    DOC "The directory containing the GMP header files"
            )
 
+  if (GMP_INCLUDE_DIR)
+    # extract version
+    file(READ "${GMP_INCLUDE_DIR}/gmp.h" _GMP_VERSION_FILE)
+
+    string(REGEX REPLACE ".*#define __GNU_MP_VERSION[ \t]*([0-9]+)[ \t\r\n]*.*" "\\1" GMP_VERSION_MAJOR "${_GMP_VERSION_FILE}")
+    string(REGEX REPLACE ".*#define __GNU_MP_VERSION_MINOR[ \t]*([0-9]+)[ \t\r\n]*.*" "\\1" GMP_VERSION_MINOR "${_GMP_VERSION_FILE}")
+    string(REGEX REPLACE ".*#define __GNU_MP_VERSION_PATCHLEVEL[ \t]*([0-9]+)[ \t\r\n]*.*" "\\1" GMP_VERSION_PATCH "${_GMP_VERSION_FILE}")
+    unset(_GMP_VERSION_FILE)
+    set(GMP_VERSION "${GMP_VERSION_MAJOR}.${GMP_VERSION_MINOR}.${GMP_VERSION_PATCH}")
+  endif()
+
   find_library(GMP_LIBRARIES NAMES gmp libgmp-10 libgmp.10 gmp.10 gmp-10
     HINTS ENV GMP_LIB_DIR
           ENV GMP_DIR
@@ -56,4 +67,10 @@ else()
 
   find_package_handle_standard_args(GMP "DEFAULT_MSG" GMP_LIBRARIES GMP_INCLUDE_DIR)
 
+endif()
+
+if(GMP_FOUND AND NOT TARGET GMP::GMP)
+  add_library(GMP::GMP INTERFACE IMPORTED)
+  set_target_properties(GMP::GMP PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${GMP_INCLUDE_DIR}")
+  target_link_libraries(GMP::GMP INTERFACE "${GMP_LIBRARIES}")
 endif()

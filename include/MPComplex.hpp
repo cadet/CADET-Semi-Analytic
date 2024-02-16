@@ -1,10 +1,10 @@
 // =============================================================================
-//  CADET-semi-analytic - The semi analytic extension of
-//  		CADET - The Chromatography Analysis and Design Toolkit
+//  CADET-semi-analytic - The semi-analytic extension of CADET
 //  
-//  Copyright © 2015-2019: Samuel Leweke¹
+//  Copyright © 2015-2020: Samuel Leweke¹²
 //                                      
 //    ¹ Forschungszentrum Juelich GmbH, IBG-1, Juelich, Germany.
+//    ² University of Cologne, Cologne, Germany.
 //  
 //  All rights reserved. This program and the accompanying materials
 //  are made available under the terms of the GNU Public License v3.0 (or, at
@@ -39,6 +39,12 @@ namespace mpfr
 			::mpc_set(_val, v._val, MPC_RNDNN);
 		}
 
+		mpcomplex(mpcomplex&& v) noexcept
+		{
+			mpfr_set_uninitialized(_val->re);
+			mpc_swap(_val, v._val);
+		}
+
 		mpcomplex(const mpreal& v) 
 		{ 
 			::mpc_init2(_val, mpreal::get_default_prec());
@@ -49,6 +55,24 @@ namespace mpfr
 		{
 			::mpc_init2(_val, mpreal::get_default_prec());
 			::mpc_set_si(_val, v, MPC_RNDNN);
+		}
+
+		mpcomplex(long int v)
+		{
+			::mpc_init2(_val, mpreal::get_default_prec());
+			::mpc_set_si(_val, v, MPC_RNDNN);
+		}
+
+		mpcomplex(unsigned int v)
+		{
+			::mpc_init2(_val, mpreal::get_default_prec());
+			::mpc_set_ui(_val, v, MPC_RNDNN);
+		}
+
+		mpcomplex(unsigned long int v)
+		{
+			::mpc_init2(_val, mpreal::get_default_prec());
+			::mpc_set_ui(_val, v, MPC_RNDNN);
 		}
 
 		mpcomplex(double v)
@@ -85,7 +109,8 @@ namespace mpfr
 
 		~mpcomplex()
 		{
-			mpc_clear(_val);
+			if (mpfr_is_initialized(_val->re))
+				mpc_clear(_val);
 		}
 
 		mpreal real() const
@@ -109,6 +134,7 @@ namespace mpfr
 		mpcomplex& operator=(const double v);        
 		mpcomplex& operator=(const char* s);
 		mpcomplex& operator=(const std::string& s);
+		mpcomplex& operator=(mpcomplex&& v) noexcept;
 
 		// +
 		mpcomplex& operator+=(const mpcomplex& v);
@@ -133,14 +159,18 @@ namespace mpfr
 		friend const mpcomplex operator*(const mpreal& b,     const mpcomplex& a);
 		friend const mpcomplex operator*(const mpcomplex& b,  const mpreal& a);
 		friend const mpcomplex operator*(const mpcomplex& b,  const mpcomplex& a);
+		friend const mpcomplex operator*(const int b,         const mpcomplex& a);
+		friend const mpcomplex operator*(const mpcomplex& b,  const int a);
 		
 		// /
 		mpcomplex& operator/=(const mpcomplex& v);
 		mpcomplex& operator/=(const mpreal& v);
 		mpcomplex& operator/=(const double v);
-		friend const mpcomplex operator/(const mpreal& b,     const mpcomplex& a);
-		friend const mpcomplex operator/(const mpcomplex& b,  const mpreal& a);
-		friend const mpcomplex operator/(const mpcomplex& b,  const mpcomplex& a);
+		friend const mpcomplex operator/(const mpreal& b,      const mpcomplex& a);
+		friend const mpcomplex operator/(const mpcomplex& b,   const mpreal& a);
+		friend const mpcomplex operator/(const mpcomplex& b,   const mpcomplex& a);
+		friend const mpcomplex operator/(const unsigned int b, const mpcomplex& a);
+		friend const mpcomplex operator/(const mpcomplex& b,   const unsigned int a);
 
 		// Boolean Operators
 		friend bool operator== (const mpcomplex& a, const mpcomplex& b);
@@ -192,6 +222,12 @@ namespace mpfr
 	inline mpcomplex& mpcomplex::operator=(const double v)
 	{
 		mpc_set_d(_val, v, MPC_RNDNN);
+		return *this;
+	}
+
+	inline mpcomplex& mpcomplex::operator=(mpcomplex&& v) noexcept
+	{
+		mpc_swap(_val, v._val);
 		return *this;
 	}
 
@@ -325,6 +361,20 @@ namespace mpfr
 		return c;
 	}
 
+	inline const mpcomplex operator*(const mpcomplex& a, const int b)
+	{
+		mpcomplex c;
+		mpc_mul_si(c._val, a._val, b, MPC_RNDNN);
+		return c;
+	}
+
+	inline const mpcomplex operator*(const int a, const mpcomplex& b)
+	{
+		mpcomplex c;
+		mpc_mul_si(c._val, b._val, a, MPC_RNDNN);
+		return c;
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 	// / Division
 	inline mpcomplex& mpcomplex::operator/=(const mpcomplex& v)
@@ -368,6 +418,20 @@ namespace mpfr
 		return c;
 	}
 
+	inline const mpcomplex operator/(const mpcomplex& a, const unsigned int b)
+	{
+		mpcomplex c;
+		mpc_div_ui(c._val, a._val, b, MPC_RNDNN);
+		return c;
+	}
+
+	inline const mpcomplex operator/(const unsigned int a, const mpcomplex& b)
+	{
+		mpcomplex c;
+		mpc_ui_div(c._val, a, b._val, MPC_RNDNN);
+		return c;
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 	// Boolean operators
 	inline bool operator== (const mpcomplex& a, const mpcomplex& b) { return (mpc_cmp(a.mpc_srcptr(), b.mpc_srcptr()) ==0); }
@@ -376,12 +440,15 @@ namespace mpfr
 	inline bool operator== (const mpcomplex& a, const long int b) { return (mpc_cmp_si(a.mpc_srcptr(), b) ==0); }
 
 
+	inline const mpreal real(const mpcomplex& x) { return x.real(); }
+	inline const mpreal imag(const mpcomplex& x) { return x.imag(); }
+
 	#define MPCOMPLEX_UNARY_MATH_FUNCTION_BODY(f)                 \
 			mpcomplex y;          \
 			mpc_##f(y.mpc_ptr(), x.mpc_srcptr(), MPC_RNDNN);           \
 			return y; 
 
-	inline const mpcomplex sqr(const mpcomplex& x) { MPCOMPLEX_UNARY_MATH_FUNCTION_BODY(sqr ); }
+	inline const mpcomplex sqr(const mpcomplex& x) { MPCOMPLEX_UNARY_MATH_FUNCTION_BODY(sqr); }
 	inline const mpcomplex sqrt(const mpcomplex& x) { MPCOMPLEX_UNARY_MATH_FUNCTION_BODY(sqrt); }
 
 	inline const mpcomplex sin(const mpcomplex& x) { MPCOMPLEX_UNARY_MATH_FUNCTION_BODY(sin); }

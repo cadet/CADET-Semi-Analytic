@@ -60,6 +60,7 @@ if(MPFR_INCLUDE_DIR)
   set(MPFR_MINOR_VERSION "${CMAKE_MATCH_1}")
   string(REGEX MATCH "define[ \t]+MPFR_VERSION_PATCHLEVEL[ \t]+([0-9]+)" _mpfr_patchlevel_version_match "${_mpfr_version_header}")
   set(MPFR_PATCHLEVEL_VERSION "${CMAKE_MATCH_1}")
+  unset(_mpfr_version_header)
   
   set(MPFR_VERSION ${MPFR_MAJOR_VERSION}.${MPFR_MINOR_VERSION}.${MPFR_PATCHLEVEL_VERSION})
   
@@ -85,3 +86,9 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MPFR DEFAULT_MSG
                                   MPFR_INCLUDE_DIR MPFR_LIBRARIES MPFR_VERSION_OK)
 mark_as_advanced(MPFR_INCLUDE_DIR MPFR_LIBRARIES)
+
+if(MPFR_FOUND AND NOT TARGET MPFR::MPFR)
+  add_library(MPFR::MPFR INTERFACE IMPORTED)
+  set_target_properties(MPFR::MPFR PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${MPFR_INCLUDE_DIR}")
+  target_link_libraries(MPFR::MPFR INTERFACE "${MPFR_LIBRARIES}")
+endif()
