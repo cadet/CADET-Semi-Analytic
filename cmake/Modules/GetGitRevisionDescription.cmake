@@ -71,6 +71,7 @@ function(get_git_head_revision _refspecvar _hashvar)
 		@ONLY)
 	include("${GIT_DATA}/grabRef.cmake")
 
+	string(REGEX REPLACE "refs/heads/" "" HEAD_REF "${HEAD_REF}")
 	set(${_refspecvar} "${HEAD_REF}" PARENT_SCOPE)
 	set(${_hashvar} "${HEAD_HASH}" PARENT_SCOPE)
 endfunction()

@@ -1,10 +1,10 @@
 // =============================================================================
-//  CADET-semi-analytic - The semi analytic extension of
-//  		CADET - The Chromatography Analysis and Design Toolkit
+//  CADET-semi-analytic - The semi-analytic extension of CADET
 //  
-//  Copyright © 2015-2019: Samuel Leweke¹
+//  Copyright © 2015-2020: Samuel Leweke¹²
 //                                      
 //    ¹ Forschungszentrum Juelich GmbH, IBG-1, Juelich, Germany.
+//    ² University of Cologne, Cologne, Germany.
 //  
 //  All rights reserved. This program and the accompanying materials
 //  are made available under the terms of the GNU Public License v3.0 (or, at
@@ -117,6 +117,25 @@ namespace casema
 		{
 			std::transform(s.begin(), s.end(), s.begin(), ::tolower);
 			return s;
+		}
+
+		/**
+		 * @brief Checks whether two strings are equal regardless of upper and lower case
+		 * @param [in] a First string
+		 * @param [in] b Second string
+		 * @return @c true if the strings are equal, otherwise @c false
+		 */
+		inline bool caseInsensitiveEquals(const std::string& a, const std::string& b)
+		{
+			const unsigned int sz = a.size();
+			if (b.size() != sz)
+				return false;
+			for (unsigned int i = 0; i < sz; ++i)
+			{
+				if (tolower(a[i]) != tolower(b[i]))
+					return false;
+			}
+			return true;
 		}
 	}
 }

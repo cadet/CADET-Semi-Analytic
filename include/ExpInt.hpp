@@ -1,10 +1,10 @@
 // =============================================================================
-//  CADET-semi-analytic - The semi analytic extension of
-//  		CADET - The Chromatography Analysis and Design Toolkit
+//  CADET-semi-analytic - The semi-analytic extension of CADET
 //  
-//  Copyright © 2015-2019: Samuel Leweke¹
+//  Copyright © 2015-2020: Samuel Leweke¹²
 //                                      
 //    ¹ Forschungszentrum Juelich GmbH, IBG-1, Juelich, Germany.
+//    ² University of Cologne, Cologne, Germany.
 //  
 //  All rights reserved. This program and the accompanying materials
 //  are made available under the terms of the GNU Public License v3.0 (or, at
@@ -24,6 +24,11 @@ namespace casema
 	template <typename real_t>
 	real_t expInt(const real_t& x, unsigned int maxIter = 10000)
 	{
+		using std::abs;
+//		using std::max;
+		using std::exp;
+		using std::log;
+
 		if (x > 1)
 		{
 			// Implementation based on V. Pegoraro, P. Slusallek
@@ -42,7 +47,7 @@ namespace casema
 				d = common - k * k / d;
 				const real_t delta = d * c;
 				e /= delta;
-				if (std::abs(delta - real_t(1)) <= std::numeric_limits<real_t>::epsilon())
+				if (abs(delta - real_t(1)) <= std::numeric_limits<real_t>::epsilon())
 				{
 					return e;
 				}
@@ -64,7 +69,7 @@ namespace casema
 				const real_t del = -fact / i;
 				ans += del;
 	//            if (abs(del) <= std::numeric_limits<real_t>::epsilon())
-				if (std::abs(del) <= std::abs(ans) * std::numeric_limits<real_t>::epsilon())
+				if (abs(del) <= abs(ans) * std::numeric_limits<real_t>::epsilon())
 				{
 					return ans;
 				}
@@ -79,12 +84,18 @@ namespace casema
 	template <typename real_t>
 	real_t inverseExpInt(const real_t& x, const real_t& tol = std::numeric_limits<real_t>::epsilon(), const unsigned int maxIter = 10000)
 	{
-		// Use Newton method
+		using std::abs;
+//		using std::max;
+		using std::log;
+		using std::expm1;
+		using std::exp;
+
+		// Apply Newton's method
 
 		// Construct initial guess
 		real_t p;
 		if (x <= 1)
-			p = std::max(real_t(1), -log(x));
+			p = max(real_t(1), -log(x));
 		else
 			p = real_t(1) / expm1(x);
 
@@ -92,12 +103,12 @@ namespace casema
 		real_t residual = casema::expInt(p, maxIter) - x;
 
 		// Perform Newton steps until accuracy is reached
-		for (unsigned int i = 0; (i < maxIter) && ((std::abs(residual) > tol) || (std::abs(residual) > tol * std::abs(x))); ++i)
+		for (unsigned int i = 0; (i < maxIter) && ((abs(residual) > tol) || (abs(residual) > tol * abs(x))); ++i)
 		{
 			const real_t step = exp(p) * residual;
 
 			// Stop if adding delta does not yield any change in p
-			if (std::abs(p * step) <= machineEpsilon(p))
+			if (abs(p * step) <= machineEpsilon(p))
 				break;
 
 			// Damping
@@ -109,7 +120,7 @@ namespace casema
 			// Try line search with at most 10 steps to decrease residual
 			real_t cand = p * (real_t(1) + alpha * step);
 			real_t newResidual = casema::expInt(cand, maxIter) - x;
-			for (unsigned int i = 0; (i < 10) && (std::abs(newResidual) > std::abs(residual)); ++i)
+			for (unsigned int i = 0; (i < 10) && (abs(newResidual) > abs(residual)); ++i)
 			{
 				alpha *= real_t(0.5);
 				cand = p * (real_t(1) + alpha * step);

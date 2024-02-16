@@ -1,10 +1,10 @@
 // =============================================================================
-//  CADET-semi-analytic - The semi analytic extension of
-//  		CADET - The Chromatography Analysis and Design Toolkit
+//  CADET-semi-analytic - The semi-analytic extension of CADET
 //  
-//  Copyright © 2015-2019: Samuel Leweke¹
+//  Copyright © 2015-2020: Samuel Leweke¹²
 //                                      
 //    ¹ Forschungszentrum Juelich GmbH, IBG-1, Juelich, Germany.
+//    ² University of Cologne, Cologne, Germany.
 //  
 //  All rights reserved. This program and the accompanying materials
 //  are made available under the terms of the GNU Public License v3.0 (or, at
@@ -15,15 +15,20 @@
 #ifndef VERSIONINFO_HPP_
 #define VERSIONINFO_HPP_
 
+#include "casemaCompilerInfo.hpp"
+
 namespace casema
 {
 
-	//! \brief Returns the version string of the library
-	const char* getVersion();
+	const char* getVersion() CASEMA_NOEXCEPT;
+	const char* getCommitHash() CASEMA_NOEXCEPT;
+	const char* getBranchRefspec() CASEMA_NOEXCEPT;
+	const char* getDependencyVersions() CASEMA_NOEXCEPT;
+	const char* getBuildType() CASEMA_NOEXCEPT;
+	const char* getCompiler() CASEMA_NOEXCEPT;
+	const char* getCompilerFlags() CASEMA_NOEXCEPT;
+	const char* getBuildHost() CASEMA_NOEXCEPT;
 
-	//! \brief Returns the git commit hash of the source which was used to build the binaries
-	const char* getCommitHash();
-
-} // namespace cadet
+} // namespace casema
 
 #endif  // VERSIONINFO_HPP_

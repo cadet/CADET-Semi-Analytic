@@ -1,9 +1,390 @@
+2019-01-25  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* .hgtags:
+	Moved tag mpfrc++-3.6.6 to changeset 993de1ab3ab2 (from changeset
+	eb1156e6ce09)
+	[7dea3b06cace] [tip]
+
+	* mpreal.h:
+	Merged all contributed changes with main
+	[993de1ab3ab2] [mpfrc++-3.6.6]
+
+2017-08-16  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* mpreal.h:
+	Fix ilogb. Return const not needed for friend. Rounding not useable.
+	[5a1542642bf0]
+
+2017-08-07  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* mpreal.h:
+	Add ilogb.
+	[0c52ebf3b604]
+
+2017-06-05  Paul Hentschel  <paul@hpminc.com>
+
+	* mpreal.h:
+	Changed grandom function to work with Brian Gladman's latest dev
+	version of mpfr.
+	[9ef1fc459291]
+
+2019-01-25  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* .hgtags:
+	Added tag mpfrc++-3.6.6 for changeset eb1156e6ce09
+	[a1f712755491]
+
+	* .hgtags:
+	Removed tag mpfrc++-3.6.6
+	[eb1156e6ce09]
+
+	* .hgtags:
+	Added tag mpfrc++-3.6.6 for changeset c0c3024fe811
+	[33d2503a3d25]
+
+	* .hgtags:
+	Added tag 3.6.6 for changeset c0c3024fe811
+	[4f5a23a11962]
+
+	* mpreal.h:
+	Added support for new functions in MFPR 4.0.0, added negate function
+	and fixed bug in double/mpreal division operator.
+	[c0c3024fe811] [3.6.6]
+
+2016-12-20  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* mpreal.h:
+	Added another overload for FREXP for better compatibility with
+	STD::FREXP (provided by Charles Karney).
+	[5219ee6c0214]
+
+2016-12-15  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* .hgtags:
+	Moved tag mpfrc++-3.6.5 to changeset 519012baebd7 (from changeset
+	ca4689c69eaa)
+	[dd9acba59d27]
+
+	* mpreal.h:
+	Fixed GCC warnings on unknown pragmas.
+	[519012baebd7] [mpfrc++-3.6.5]
+
+	* .hgtags:
+	Added tag mpfrc++-3.6.5 for changeset ca4689c69eaa
+	[75f1e9602bb3]
+
+	* Merged with online branch
+	[ca4689c69eaa]
+
+2016-11-24  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* README.md:
+	README.md edited online with Bitbucket
+	[d7f37b26713c]
+
+2016-12-15  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* mpreal.h:
+	Updates to move-operations, small fixes, bumped to 3.6.5 version.
+	[997653929d38]
+
+2016-08-29  Pavel Holoborodko  <pavel@advanpix.com>
+
+	* .hgtags:
+	Removed tag 3.6.4
+	[f29db8a042ad]
+
+	* .hgtags:
+	Added tag mpfrc++-3.6.4 for changeset 667c8874ec46
+	[397112248c31]
+
+	* .hgtags:
+	Added tag 3.6.4 for changeset c9a66bcd9828
+	[667c8874ec46] [mpfrc++-3.6.4]
+
+	* .hgtags:
+	Removed tag 3.6.4
+	[c9a66bcd9828]
+
+	* changelog:
+	Changelog has been updated.
+	[ad643b2e9fe8]
+
+	* .hgtags:
+	Added tag 3.6.4 for changeset f961c1f3af6c
+	[1b5a28d2f1f9]
+
+	* mpreal.h:
+	Bumped version to 3.6.4
+	[f961c1f3af6c]
+
+	* mpreal.h:
+	Added nextpow2, setsignbit and 3-4 argument hypot with protection
+	agains overflow. Improved compatibility with Intel compilers, fixed
+	get_exp().
+	[7b6762157fcd]
+
+2016-01-08  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* .hgtags:
+	Added tag mpfrc++-3.6.3 for changeset bed0adf08642
+	[cbda4ff8f6b2]
+
+	* .hgtags:
+	Removed tag mpfrc++-3.6.3
+	[bed0adf08642] [mpfrc++-3.6.3]
+
+	* changelog:
+	Updated the changelog
+	[d9a805ac7da5]
+
+	* mpreal.h:
+	Updated list of contributors.
+	[c247cf9d59a0]
+
+	* mpreal.h:
+	Updated copyright notice
+	[82c2ecd78875]
+
+	* .hgtags:
+	Added tag mpfrc++-3.6.3 for changeset 89bef2abf54b
+	[025578cf1a20]
+
+	* .hgtags:
+	Removed tag 3.6.3
+	[84c53970adaa]
+
+	* .hgtags:
+	Added tag 3.6.3 for changeset 7ffcad32c02b
+	[89bef2abf54b]
+
+	* changelog:
+	All set for the new release
+	[7ffcad32c02b]
+
+	* mpreal.h:
+	Updated the version number to 3.6.3
+	[89279de50ec6]
+
+	* changelog:
+	Updated the changelog
+	[71d9c011d909]
+
+	* mpreal.h:
+	Switched to stdint.h for C++03 compatibility, added guard brackets
+	for mpfr_get_default_prec
+	[e8204db924a8]
+
+2015-09-26  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* mpreal.h:
+	Updated frexp, code clean-up.
+	[a396b360259d]
+
+2015-07-24  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* mpreal.h:
+	Included <algorithm> for std::min/max.
+	[eac86fd487c8]
+
+2015-05-28  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* README.md:
+	Updated the readme
+	[248da9fd5d83]
+
+	* mpreal.h:
+	Fixed incompatibility with MSVC in array sum function. Thanks to
+	Brian Gladman for reporting the issue.
+	[a25d66dbb157]
+
+2015-04-16  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* mpreal.h:
+	Increased number of digits in string conversion to guarantee
+	accurate recovery
+	[5207228dbf21]
+
+2015-04-13  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* README.md:
+	Minor edits to README.md
+	[2ad0118738df]
+
+	* .hgtags:
+	Moved tag mpfrc++-3.6.2 to changeset 729ef0273599 (from changeset
+	7b05afee0747)
+	[b1c40b105095]
+
+	* changelog:
+	Changelog update to match the current version
+	[729ef0273599] [mpfrc++-3.6.2]
+
+	* FOSSLicenseException.txt, mpreal.h:
+	Version number has been fixed.
+	[c3344cebf10a]
+
+2015-04-02  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* mpreal.h:
+	Fixe to avoid a ton of signed/unsigned comparison warnings
+	[bc195293ab38]
+
+	* .hgtags:
+	Added tag mpfrc++-3.6.2 for changeset 7b05afee0747
+	[fdaee78b0b66]
+
+	* changelog:
+	Updated changelog before new version release
+	[7b05afee0747]
+
+	* mpreal.h:
+	Added warning to stress out the required IEEE compliance, bumped
+	version.
+	[d1d8630400d7]
+
+2015-04-01  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* Merged to have README.md
+	[f64dc82740e3]
+
+	* README.md:
+	README.md edited online with Bitbucket
+	[c2c4fc23e7ff]
+
+	* mpreal.h:
+	Fixed and extended relational operators.
+	[4a1308912e53]
+
+2015-03-20  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* mpreal.h:
+	Added fast zero, logb, scalbn. Fixed sum and other minor changes.
+	[a3680b1e7035]
+
+2015-01-06  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* mpreal.h:
+	Added converter from std::complex scalars
+	[04bb2944d39f]
+
+2014-12-09  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* mpreal.h:
+	Added "tgamma" for conformance with C++11
+	[cd7d3a58ec04]
+
+2014-10-21  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* mpreal.h:
+	Fixed detection of "explicit converters" support by GCC.
+	[747851110144]
+
+2014-10-10  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* .hgtags:
+	Moved tag mpfrc++-3.6.1 to changeset e1be08860b61 (from changeset
+	b96247a1ab1b)
+	[6e38941f1a02]
+
+	* FOSS License Exception.txt, FOSSLicenseException.txt:
+	FOSS license file is renamed
+	[e1be08860b61] [mpfrc++-3.6.1]
+
+	* .hgtags:
+	Added tag mpfrc++-3.6.1 for changeset b96247a1ab1b
+	[eea219d51f89]
+
+	* mpreal.h:
+	Fixed micro-version number
+	[b96247a1ab1b]
+
+	* .hgtags:
+	Moved tag mpfrc++-3.6.0 to changeset f7c491ba598d (from changeset
+	4bd12a575301)
+	[ec93a0c33cfb]
+
+	* .hgtags:
+	Moved tag mpfrc++-3.6.0 to changeset 4bd12a575301 (from changeset
+	2d60dbf27e9d)
+	[a466a3ad8e3f]
+
+	* changelog:
+	Updated changelog
+	[4bd12a575301]
+
+	* FOSS License Exception.txt, example/example.cpp, mpreal.h:
+	Fixed error in signum (sgn) function.
+	[39b74057b225]
+
+2014-10-05  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* .hgtags:
+	Added tag mpfrc++-3.6.0 for changeset 2d60dbf27e9d
+	[f7c491ba598d] [mpfrc++-3.6.0]
+
+	* mpreal.h:
+	Updated version signature
+	[2d60dbf27e9d]
+
+	* .hgtags:
+	Removed tag mpfrc++-3.5.9
+	[b6558a00425c]
+
+	* changelog:
+	Updated changelog
+	[1bdf7affbbc7]
+
+2014-08-24  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* mpreal.h:
+	Added copysign and signbit functions
+	[634c24e851fc]
+
+2014-07-19  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* mpreal.h:
+	Added proper MPFR version detection for grandom
+	[7cc45167ef74]
+
+2014-07-15  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* mpreal.h:
+	Fixed "unused argument" warning
+	[4d2f08db7f3d]
+
+	* FOSS License Exception.txt:
+	Added FOSS license exception (suggested by Jorge Tiago Vila)
+	[bbb52e09d0db]
+
+	* mpreal.h:
+	Greatly simplified support for 64-bit integers (suggested by Charles
+	Karney)
+	[70aa80a90f41]
+
 2014-07-04  Pavel Holoborodko  <pavel@holoborodko.com>
+
+	* .hgtags:
+	Moved tag mpfrc++-3.5.9 to changeset 3b59fb37d8d0 (from changeset
+	c82eb0b36ed8)
+	[f0a55e6c6510]
+
+	* mpreal.h:
+	Enhancements in output and toString functions
+	[3b59fb37d8d0]
+
+	* .hgtags:
+	Added tag mpfrc++-3.5.9 for changeset c82eb0b36ed8
+	[b5c655632af0]
+
+	* changelog:
+	Updated changelog
+	[c82eb0b36ed8]
 
 	* mpreal.h:
 	Added explicit conversion operators and more features to output
 	operator. Contributed by Charles Karney.
-	[43f5240bc55e] [tip]
+	[43f5240bc55e]
 
 2014-06-12  Pavel Holoborodko  <pavel@holoborodko.com>
 
