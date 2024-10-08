@@ -11,3 +11,6 @@
 *.dll
 *.dylib
 *.so
+.vs
+build
+out/

@@ -51,7 +51,7 @@ casema::util::SlicedVector<mpfr::mpreal> invertLaplaceImpl(const std::function<v
 #endif
 
 		#pragma omp for schedule(static)
-		for (std::size_t k = 1; k <= nSummands; ++k)
+		for (int k = 1; k <= nSummands; ++k)
 		{
 			const mpfr::mpreal kpit = k * casema::Constants<mpfr::mpreal>::pi() / T;
 			f(mpfr::mpcomplex(abscissa, kpit), funcEvals[k-1]);
@@ -69,7 +69,7 @@ casema::util::SlicedVector<mpfr::mpreal> invertLaplaceImpl(const std::function<v
 		}
 
 		#pragma omp for schedule(static)
-		for (std::size_t i = 0; i < nTime; ++i)
+		for (int i = 0; i < nTime; ++i)
 		{
 			for (int j = 0; j < nOutputs; ++j)
 				result(j, i) = f0[j];
@@ -136,7 +136,7 @@ casema::util::SlicedVector<mpfr::mpreal> invertLaplaceKahanImpl(const std::funct
 #endif
 
 		#pragma omp for schedule(static)
-		for (std::size_t k = 1; k <= nSummands; ++k)
+		for (int k = 1; k <= nSummands; ++k)
 		{
 			const mpfr::mpreal kpit = k * casema::Constants<mpfr::mpreal>::pi() / T;
 			f(mpfr::mpcomplex(abscissa, kpit), funcEvals[k-1]);
@@ -158,7 +158,7 @@ casema::util::SlicedVector<mpfr::mpreal> invertLaplaceKahanImpl(const std::funct
 		std::vector<mpfr::mpreal> diff(nOutputs, 0.0);
 
 		#pragma omp for schedule(static)
-		for (std::size_t i = 0; i < nTime; ++i)
+		for (int i = 0; i < nTime; ++i)
 		{
 			for (int j = 0; j < nOutputs; ++j)
 			{
