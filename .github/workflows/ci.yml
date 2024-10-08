@@ -45,23 +45,26 @@ jobs:
           .\vcpkg\vcpkg install hdf5 gmp mpfr mpc eigen3
           .\vcpkg\vcpkg integrate install # Integrate with CMake
 
+      - name: Create Build and Install Directories
+        run: |
+          cmake -E make_directory "${env:BUILD_DIR}"
+          cmake -E make_directory "${env:INSTALL_PREFIX}"
+
       - name: Configure CMake
         run: |
-          cmake -E make_directory "${BUILD_DIR}"
-          cmake -E make_directory "${INSTALL_PREFIX}"
-          cd "${BUILD_DIR}"
-          cmake -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\vcpkg.cmake -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" "${SRC_DIR}"
+          cd "${env:BUILD_DIR}"
+          cmake -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}\vcpkg\vcpkg.cmake -DCMAKE_INSTALL_PREFIX="${env:INSTALL_PREFIX}" -DCMAKE_BUILD_TYPE="${env:BUILD_TYPE}" "${env:SRC_DIR}"
 
       - name: Build and Install
         run: |
-          cd "${BUILD_DIR}"
-          cmake --build . --target install --config ${BUILD_TYPE} -- -j %NUMBER_OF_PROCESSORS%
+          cd "${env:BUILD_DIR}"
+          cmake --build . --target install --config ${env:BUILD_TYPE} -- -j %NUMBER_OF_PROCESSORS%
 
       - name: Check if it runs
         run: |
-          $env:LD_LIBRARY_PATH="${INSTALL_PREFIX}\lib;$env:LD_LIBRARY_PATH"
-          & "${INSTALL_PREFIX}\bin\chromatogram.exe" --version
+          $env:LD_LIBRARY_PATH="${env:INSTALL_PREFIX}\lib;$env:LD_LIBRARY_PATH"
+          & "${env:INSTALL_PREFIX}\bin\chromatography.exe" --version
 
       # - name: Run tests
       #   run: |
-      #     & "${BUILD_DIR}\test\testRunner.exe"
+      #     & "${env:BUILD_DIR}\test\testRunner.exe"
