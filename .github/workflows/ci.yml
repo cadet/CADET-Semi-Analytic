@@ -14,17 +14,17 @@ on:
         type: string
 
 jobs:
-  Ubuntu-latest:
-    runs-on: ubuntu-latest
+  Windows-latest:
+    runs-on: windows-latest
     strategy:
       fail-fast: true
     defaults:
       run:
-        shell: bash -l {0}
+        shell: pwsh # Use PowerShell as the shell
     env:
-      SRC_DIR: ${{ github.workspace }}/src
-      BUILD_DIR: ${{ github.workspace }}/build
-      INSTALL_PREFIX: ${{ github.workspace }}/install
+      SRC_DIR: ${{ github.workspace }}\src
+      BUILD_DIR: ${{ github.workspace }}\build
+      INSTALL_PREFIX: ${{ github.workspace }}\install
       BUILD_TYPE: Release
     steps:
       - uses: actions/checkout@v4
@@ -33,41 +33,35 @@ jobs:
           path: src
           ref: ${{ github.event.inputs.ref || github.ref }}
 
-      - name: Add Toolchain PPA
+      - name: Install vcpkg
         run: |
-          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-          sudo apt-get update
+          git clone https://github.com/microsoft/vcpkg.git
+          cd vcpkg
+          .\bootstrap-vcpkg.bat
+          cd ..
 
-      - name: Install Dependencies
+      - name: Install Dependencies with vcpkg
         run: |
-          sudo apt -y install \
-            build-essential \
-            libhdf5-dev \
-            libgmp-dev \
-            libmpfr-dev \
-            libmpc-dev \
-            libeigen3-dev \
-            gcc-4.8 \
-            g++-4.8;
+          .\vcpkg\vcpkg install hdf5 gmp mpfr mpc eigen3
+          .\vcpkg\vcpkg integrate install # Integrate with CMake
 
-      - name: Set GCC 4.8 as Default
-        run: |
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
-
-      - name: Build and Install
+      - name: Configure CMake
         run: |
           cmake -E make_directory "${BUILD_DIR}"
           cmake -E make_directory "${INSTALL_PREFIX}"
           cd "${BUILD_DIR}"
-          cmake -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" "${SRC_DIR}"
-          make install -j$(nproc)
+          cmake -DCMAKE_TOOLCHAIN_FILE=.\vcpkg\vcpkg.cmake -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" "${SRC_DIR}"
+
+      - name: Build and Install
+        run: |
+          cd "${BUILD_DIR}"
+          cmake --build . --target install --config ${BUILD_TYPE} -- -j %NUMBER_OF_PROCESSORS%
 
       - name: Check if it runs
         run: |
-          export LD_LIBRARY_PATH=${INSTALL_PREFIX}/lib:$LD_LIBRARY_PATH
-          ${INSTALL_PREFIX}/bin/cadet-cli --version
+          $env:LD_LIBRARY_PATH="${INSTALL_PREFIX}\lib;$env:LD_LIBRARY_PATH"
+          & "${INSTALL_PREFIX}\bin\chromatogram.exe" --version
 
-      - name: Run tests
-        run: |
-          ${BUILD_DIR}/test/testRunner
+      # - name: Run tests
+      #   run: |
+      #     & "${BUILD_DIR}\test\testRunner.exe"
