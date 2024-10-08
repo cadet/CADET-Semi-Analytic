@@ -214,9 +214,14 @@ bool ColumnWithPoreDiffusion::configure(io::IParameterProvider& paramProvider)
 {
 	ColumnWithParticles::configure(paramProvider);
 
-	paramProvider.pushScope("discretization");
-	_nBound = std::move(paramProvider.getIntArray("NBOUND"));
-	paramProvider.popScope();
+	if (paramProvider.exists("NBOUND"))
+		_nBound = std::move(paramProvider.getIntArray("NBOUND"));
+	else // backwards compatibility
+	{
+		paramProvider.pushScope("discretization");
+		_nBound = std::move(paramProvider.getIntArray("NBOUND"));
+		paramProvider.popScope();
+	}
 
 	const int numBound = std::accumulate(_nBound.begin(), _nBound.end(), 0);
 	const int numParType = _parTypeVolFrac.size();
