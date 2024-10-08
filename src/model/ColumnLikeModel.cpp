@@ -149,6 +149,16 @@ bool ColumnWithParticles::configure(io::IParameterProvider& paramProvider)
 {
 	ColumnLikeModel::configure(paramProvider);
 
+	if (paramProvider.exists("PAR_GEOM"))
+	{
+		std::vector<std::string> pg = paramProvider.getStringArray("PAR_GEOM");
+		for (const std::string entry : pg) {
+			if (entry != "SPHERE") {
+				throw InvalidParameterException("Only spherical particles can be simulated, but " + entry + " was specified");
+			}
+		}
+	}
+
 	int numParType = 1;
 	if (paramProvider.exists("PAR_TYPE_VOLFRAC"))
 	{
