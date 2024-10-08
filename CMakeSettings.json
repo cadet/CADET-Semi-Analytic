@@ -1,0 +1,57 @@
+{
+  "environments": [
+    {
+      "BUILDROOT": "${projectDir}/build",
+      "INSTALL_DIR": "${projectDir}/install/${name}"
+    }
+  ],
+  "configurations": [
+    {
+      "name": "DEBUG",
+      "generator": "Visual Studio 17 2022 Win64",
+      "configurationType": "Debug",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${env.BUILDROOT}",
+      "cmakeCommandArgs": "-DVCPKG_TARGET_TRIPLET=x64-windows-static --fresh",
+      "buildCommandArgs": "-m -v:minimal",
+      "variables": [
+        {
+          "name": "BUILD_SHARED_LIBS",
+          "value": "1",
+          "type": "STRING"
+        },
+        {
+          "name": "CMAKE_BUILD_TYPE",
+          "value": "Debug",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "name": "aRELEASE",
+      "generator": "Visual Studio 17 2022 Win64",
+      "configurationType": "Release",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "buildRoot": "${env.BUILDROOT}",
+      "cmakeCommandArgs": "-DVCPKG_TARGET_TRIPLET=x64-windows-static -DENABLE_STATIC_LINK_LAPACK=ON -DENABLE_STATIC_LINK_DEPS=ON -DMPFR_USE_NO_MACRO=ON -DMPFR_USE_INTMAX_T=ON --fresh",
+      "buildCommandArgs": "-m -v:minimal",
+      "variables": [
+        {
+          "name": "HDF5_USE_STATIC_LIBRARIES",
+          "value": "1",
+          "type": "STRING"
+        },
+        {
+          "name": "BUILD_SHARED_LIBS",
+          "value": "0",
+          "type": "STRING"
+        },
+        {
+          "name": "CMAKE_BUILD_TYPE",
+          "value": "Release",
+          "type": "STRING"
+        }
+      ]
+    }
+  ]
+}

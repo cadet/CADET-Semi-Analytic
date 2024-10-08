@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "hdf5",
+    "gmp",
+    "mpfr",
+    "mpc",
+    "eigen3"
+  ] 
+}
