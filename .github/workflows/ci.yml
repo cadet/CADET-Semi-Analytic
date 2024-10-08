@@ -13,7 +13,6 @@ on:
         default: 'HEAD'
         type: string
 
-
 jobs:
   Ubuntu-latest:
     runs-on: ubuntu-latest
@@ -33,9 +32,14 @@ jobs:
           submodules: true
           path: src
           ref: ${{ github.event.inputs.ref || github.ref }}
+
+      - name: Add Toolchain PPA
+        run: |
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          sudo apt-get update
+
       - name: Install Dependencies
         run: |
-          sudo apt-get update
           sudo apt -y install \
             build-essential \
             libhdf5-dev \
@@ -45,6 +49,12 @@ jobs:
             libeigen3-dev \
             gcc-4.8 \
             g++-4.8;
+
+      - name: Set GCC 4.8 as Default
+        run: |
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 90
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
+
       - name: Build and Install
         run: |
           cmake -E make_directory "${BUILD_DIR}"
@@ -52,10 +62,12 @@ jobs:
           cd "${BUILD_DIR}"
           cmake -DCMAKE_INSTALL_PREFIX="${INSTALL_PREFIX}" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" "${SRC_DIR}"
           make install -j$(nproc)
+
       - name: Check if it runs
         run: |
           export LD_LIBRARY_PATH=${INSTALL_PREFIX}/lib:$LD_LIBRARY_PATH
           ${INSTALL_PREFIX}/bin/cadet-cli --version
+
       - name: Run tests
         run: |
           ${BUILD_DIR}/test/testRunner
