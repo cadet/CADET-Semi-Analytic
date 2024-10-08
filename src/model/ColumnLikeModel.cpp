@@ -149,6 +149,16 @@ bool ColumnWithParticles::configure(io::IParameterProvider& paramProvider)
 {
 	ColumnLikeModel::configure(paramProvider);
 
+	if (paramProvider.exists("PAR_GEOM"))
+	{
+		std::vector<std::string> pg = paramProvider.getStringArray("PAR_GEOM");
+		for (const std::string entry : pg) {
+			if (entry != "SPHERE") {
+				throw InvalidParameterException("Only spherical particles can be simulated, but " + entry + " was specified");
+			}
+		}
+	}
+
 	int numParType = 1;
 	if (paramProvider.exists("PAR_TYPE_VOLFRAC"))
 	{
@@ -214,9 +224,14 @@ bool ColumnWithPoreDiffusion::configure(io::IParameterProvider& paramProvider)
 {
 	ColumnWithParticles::configure(paramProvider);
 
-	paramProvider.pushScope("discretization");
-	_nBound = std::move(paramProvider.getIntArray("NBOUND"));
-	paramProvider.popScope();
+	if (paramProvider.exists("NBOUND"))
+		_nBound = std::move(paramProvider.getIntArray("NBOUND"));
+	else // backwards compatibility
+	{
+		paramProvider.pushScope("discretization");
+		_nBound = std::move(paramProvider.getIntArray("NBOUND"));
+		paramProvider.popScope();
+	}
 
 	const int numBound = std::accumulate(_nBound.begin(), _nBound.end(), 0);
 	const int numParType = _parTypeVolFrac.size();

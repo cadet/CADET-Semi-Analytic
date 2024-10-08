@@ -40,6 +40,7 @@ namespace
 			"PAR_POROSITY": 0.75,
 			"INIT_C": [0.0],
 			"INIT_Q": [0.0],
+			"NBOUND": [1],
 			"ADSORPTION_MODEL": "LINEAR",
 			"adsorption":
 			{
@@ -51,7 +52,6 @@ namespace
 			{
 				"NCOL": 16,
 				"NPAR": 4,
-				"NBOUND": [1],
 				"PAR_DISC_TYPE": "EQUIDISTANT_PAR",
 				"USE_ANALYTIC_JACOBIAN": true,
 				"MAX_KRYLOV": 0,
