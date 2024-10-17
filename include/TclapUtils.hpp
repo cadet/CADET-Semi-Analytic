@@ -39,8 +39,8 @@ namespace TCLAP
 		{
 			std::cout << "This is " << _progName << " version " << casema::getVersion() << " (" << casema::getBranchRefspec() << " branch)\n";
 			std::cout << "Built from commit " << casema::getCommitHash() << "\n";
-		    std::cout << "CASEMA homepage: <http://www.cadet-web.de>\n";
-		    std::cout << "Fork CASEMA on GitHub: <https://github.com/modsim/CASEMA>\n";
+			std::cout << "CADET homepage: <http://cadet.github.io/>\n";
+			std::cout << "Fork CADET-Semi-Analytic on GitHub: <https://github.com/cadet/CADET-Semi-Analytic>\n";
 		    std::cout << "Report bugs to the issue tracker on GitHub or <cadet@fz-juelich.de>" << std::endl;
 		}
 
