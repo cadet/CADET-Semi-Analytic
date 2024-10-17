@@ -251,7 +251,11 @@ bool ColumnWithPoreDiffusion::configure(io::IParameterProvider& paramProvider)
 		throw InvalidParameterException("Field PAR_DIFFUSION has to have 1 or " + std::to_string(numParType) + " elements");
 	_parDiffusion = std::move(toMPreal(parDiffusion, numParType));
 
-	const std::vector<double> parSurfDiffusion = paramProvider.getDoubleArray("PAR_SURFDIFFUSION");
+	std::vector<double> parSurfDiffusion;
+	if (paramProvider.exists("PAR_SURFDIFFUSION"))
+		parSurfDiffusion = paramProvider.getDoubleArray("PAR_SURFDIFFUSION");
+	else
+		parSurfDiffusion = { 0.0 };
 	if ((parSurfDiffusion.size() != 1) && (parSurfDiffusion.size() != numBound))
 		throw InvalidParameterException("Field PAR_SURFDIFFUSION has to have 1 or " + std::to_string(numBound) + " elements");
 	_parSurfDiffusion = std::move(toMPreal(parSurfDiffusion, numBound));
