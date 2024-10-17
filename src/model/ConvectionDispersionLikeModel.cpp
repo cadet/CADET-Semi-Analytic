@@ -47,6 +47,13 @@ bool ConvectionDispersionLikeModel::configure(io::IParameterProvider& paramProvi
 {
 	UnitOperation::configure(paramProvider);
 
+	if (paramProvider.exists("NCOMP")) // to prevent misuse of files that were set up for e.g. CADET-Core
+	{
+		const int nComp = paramProvider.getInt("NCOMP");
+		if (nComp != 1)
+			throw InvalidParameterException("CADET-semi-analytic only supports single component systems, but NCOMP was specified as " + std::to_string(nComp));
+	}
+
 	// Read geometry parameters
 	_colLength = paramProvider.getDouble("COL_LENGTH");
 
