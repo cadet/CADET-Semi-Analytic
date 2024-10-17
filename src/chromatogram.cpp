@@ -247,8 +247,8 @@ int main(int argc, char** argv)
 		cmd >> (new TCLAP::ValueArg<mpfr::mpreal>("a", "abscissa", "Abscissa in Durbin's method, used as safety margin if error (-e) is given", false, 0, "Float"))->storeIn(&opts.abscissa);
 		cmd >> (new TCLAP::ValueArg<mpfr::mpreal>("e", "error", "Error threshold (default: 1e-10)", false, 1e-10, "Float"))->storeIn(&opts.error);
 		cmd >> (new TCLAP::ValueArg<mpfr::mpreal>("w", "weight", "Weight used to distribute error onto consistency and truncation (default: 0.5)", false, 0.5, "Float"))->storeIn(&opts.errorWeight);
-		cmd >> (new TCLAP::ValueArg<std::size_t>("N", "lapsum", "Maximum number of summands in Durbin's method (Laplace inversion)", false, 0, "Int"))->storeIn(&opts.laplaceSummands);
-		cmd >> (new TCLAP::ValueArg<std::size_t>("n", "hankelsum", "Number of summands in Dini's expansion (Hankel inversion)", false, 0, "Int"))->storeIn(&opts.hankelSummands);
+		cmd >> (new TCLAP::ValueArg<std::size_t>("N", "lapsum", "Maximum number of (Laplace) summands in Durbin's method (Laplace inversion)", false, 0, "Int"))->storeIn(&opts.laplaceSummands);
+		cmd >> (new TCLAP::ValueArg<std::size_t>("n", "hankelsum", "Number of (Hankel) summands in Dini's expansion (Hankel inversion)", false, 0, "Int"))->storeIn(&opts.hankelSummands);
 		cmd >> (new TCLAP::SwitchArg("", "kahan", "Use Kahan summation"))->storeIn(&opts.kahan);
 		cmd >> (new TCLAP::SwitchArg("", "ignorecstr", "Ignore CSTRs in error estimates"))->storeIn(&opts.ignoreCSTR);
 
