@@ -1,8 +1,8 @@
-![CADET Logo](doc/logo/CADET-GitHub.png "Chromatography Analysis and Design Toolkit")
+[![DOI](https://zenodo.org/badge/38963550.svg)](https://doi.org/10.5281/zenodo.14066869)
 
-# Chromatography Analysis and Design Toolkit - Semi Analytic Extension
+# CADET - Semi Analytic Extension
 
-The Chromatography Analysis and Design Toolkit (CADET) is developed at the Institute of Bio- and Geosciences 1 (IBG-1) of Forschungszentrum Jülich (FZJ) under supervision of Dr. Eric von Lieres. This is the semi analytic extension of the [core CADET project](https://github.com/modsim/cadet), of which both are freely distributed (under the terms of the GPLv3) as a contribution to the scientific community. If you find it useful for your own work, we would appreciate acknowledgements of this software and citations of our papers:
+[CADET](https://cadet.github.io/) is developed at the Institute of Bio- and Geosciences 1 (IBG-1) of Forschungszentrum Jülich (FZJ) under supervision of Dr. Eric von Lieres. This is the semi analytic extension of the [CADET project](https://github.com/cadet), which is freely distributed (under the terms of the GPLv3) as a contribution to the scientific community. If you find it useful for your own work, we would appreciate acknowledgements of this software and citations of our papers:
 
 * S. Leweke, E. von Lieres (2016): [Fast arbitrary order moments and arbitrary precision solution of the general rate model of column liquid chromatography with linear isotherm](https://doi.org/10.1016/j.compchemeng.2015.09.009), Computers & Chemical Engineering, 84, 350–362.
 
