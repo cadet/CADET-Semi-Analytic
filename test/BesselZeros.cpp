@@ -27,7 +27,7 @@ namespace
 	}
 }
 
-TEST_CASE("Bessel zeros", "[Bessel]")
+TEST_CASE("Bessel zeros", "[Bessel],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(100));
 
