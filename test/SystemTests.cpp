@@ -305,10 +305,20 @@ TEST_CASE("Joint system solution multiple ports", "[System]")
 	jsonModel["unit_002"] = grm2D;
 	jsonModel["unit_003"] = createOutlet();
 	jsonModel["unit_004"] = createOutlet();
-	jsonModel["connections"] = makeConnections({ 0.0, 2.0, 0.0, 0.0, -1.0, -1.0, 1.0,
-	                                             1.0, 2.0, 0.0, 1.0, -1.0, -1.0, 1.0,
-	                                             2.0, 3.0, 0.0, 0.0, -1.0, -1.0, 1.0,
-	                                             2.0, 4.0, 1.0, 0.0, -1.0, -1.0, 1.0
+
+	// calculate flow rates to maintain constant velocity
+	const int nRad = grm2D["discretization"]["NRAD"];
+	double deltaR = grm2D["COL_RADIUS"].get<double>() / static_cast<double>(nRad);
+	double* flowRate = new double[nRad];
+	const double pi = 3.1415926535897932384626433;
+
+	for (int r = 0; r < nRad; r++)
+		flowRate[r] = grm2D["VELOCITY"].get<double>() * grm2D["COL_POROSITY"].get<double>() * pi * (std::pow(deltaR * (r + 1), 2) - std::pow(deltaR * r, 2));
+
+	jsonModel["connections"] = makeConnections({ 0.0, 2.0, 0.0, 0.0, -1.0, -1.0, flowRate[0], // unit from, to, port from, to, component from, to, flow rate
+	                                             1.0, 2.0, 0.0, 1.0, -1.0, -1.0, flowRate[1],
+	                                             2.0, 3.0, 0.0, 0.0, -1.0, -1.0, flowRate[0],
+	                                             2.0, 4.0, 1.0, 0.0, -1.0, -1.0, flowRate[1]
 	                                           });
 	const std::vector<mpfr::mpreal> secTimes{0.0, 1.0, 10.0};
 
@@ -358,10 +368,19 @@ TEST_CASE("Joint system solution multiple ports single out", "[System]")
 
 	jsonModel["unit_002"] = grm2D;
 	jsonModel["unit_003"] = createOutlet();
-	jsonModel["connections"] = makeConnections({ 0.0, 2.0, 0.0, 0.0, -1.0, -1.0, 3.0,
-	                                             1.0, 2.0, 0.0, 1.0, -1.0, -1.0, 1.0,
-	                                             2.0, 3.0, 0.0, 0.0, -1.0, -1.0, 3.0,
-	                                             2.0, 3.0, 1.0, 0.0, -1.0, -1.0, 1.0
+
+	// calculate flow rates to maintain constant velocity
+	const int nRad = grm2D["discretization"]["NRAD"];
+	double deltaR = grm2D["COL_RADIUS"].get<double>() / static_cast<double>(nRad);
+	double* flowRate = new double[nRad];
+	const double pi = 3.1415926535897932384626433;
+	for (int r = 0; r < nRad; r++)
+		flowRate[r] = grm2D["VELOCITY"].get<double>() * grm2D["COL_POROSITY"].get<double>() * pi * (std::pow(deltaR * (r + 1), 2) - std::pow(deltaR * r, 2));
+
+	jsonModel["connections"] = makeConnections({ 0.0, 2.0, 0.0, 0.0, -1.0, -1.0, flowRate[0], // unit from, to, port from, to, component from, to, flow rate
+	                                             1.0, 2.0, 0.0, 1.0, -1.0, -1.0, flowRate[1],
+	                                             2.0, 3.0, 0.0, 0.0, -1.0, -1.0, flowRate[0],
+	                                             2.0, 3.0, 1.0, 0.0, -1.0, -1.0, flowRate[1]
 	                                           });
 	const std::vector<mpfr::mpreal> secTimes{0.0, 1.0, 10.0};
 
