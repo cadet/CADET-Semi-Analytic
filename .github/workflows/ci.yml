@@ -52,27 +52,28 @@ jobs:
           cd "${env:BASE_DIR}"
 
           # Build GMP
-          Invoke-WebRequest -Uri "https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz" -OutFile gmp.tar.lz
-          7z x gmp.tar.lz
-          cd gmp-6.2.1
+          Invoke-WebRequest -Uri "https://gmplib.org/download/gmp/gmp-6.3.0.tar.lz" -OutFile gmp.tar.lz
+          7z x gmp.tar.lz -o$base_dir
+          tar -xvf gmp.tar -C gmp-6.2.1
+          cd gmp-6.3.0
           ./configure --prefix="${base_dir}/gmp"
           make
           make install
           cd "${env:BASE_DIR}"
 
           # Build MPFR
-          Invoke-WebRequest -Uri "https://www.mpfr.org/mpfr-current/mpfr-4.1.0.tar.gz" -OutFile mpfr.tar.gz
-          7z x mpfr.tar.gz
-          cd mpfr-4.1.0
+          Invoke-WebRequest -Uri "https://www.mpfr.org/mpfr-current/mpfr-4.2.1.tar.gz" -OutFile mpfr.tar.gz
+          tar -xzf mpfr.tar.gz -C mpfr-4.1.0
+          cd mpfr-4.2.1
           ./configure --prefix="${base_dir}/mpfr" --with-gmp="${base_dir}/gmp"
           make
           make install
           cd "${env:BASE_DIR}"
 
           # Build MPC
-          Invoke-WebRequest -Uri "https://ftp.gnu.org/gnu/mpc/mpc-1.2.1.tar.gz" -OutFile mpc.tar.gz
-          7z x mpc.tar.gz
-          cd mpc-1.2.1
+          Invoke-WebRequest -Uri "https://ftp.gnu.org/gnu/mpc/mpc-1.3.1.tar.gz" -OutFile mpc.tar.gz
+          tar -xzf mpc.tar.gz -C mpc-1.2.1
+          cd mpc-1.3.1
           ./configure --prefix="${base_dir}/mpc" --with-gmp="${base_dir}/gmp" --with-mpfr="${base_dir}/mpfr"
           make
           make install
