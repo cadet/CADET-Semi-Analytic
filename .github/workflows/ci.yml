@@ -46,7 +46,7 @@ jobs:
               -DCMAKE_CXX_COMPILER=g++ \
               -DCMAKE_C_COMPILER=gcc \
               -DUSE_FADBAD=ON \
-              -DENABLE_TESTS=OFF \
+              -DENABLE_TESTS=ON \
               ..
 
     - name: Build
