@@ -8,7 +8,7 @@ If you find it useful for your own work, we would appreciate acknowledgements of
 
 * S. Leweke, E. von Lieres (2016): [Fast arbitrary order moments and arbitrary precision solution of the general rate model of column liquid chromatography with linear isotherm](https://doi.org/10.1016/j.compchemeng.2015.09.009), Computers & Chemical Engineering, 84, 350–362.
 
-Please note that the results from the referenced publication can be reproduced exactly using version 1 of the software, which is saved in a [dedicated branch](https://github.com/cadet/CADET-Semi-Analytic/tree/v1.2.1).
+Please note that the results from the referenced publication can be reproduced exactly using version 1 of the software, which can be [accessed on zenodo](https://doi.org/10.5281/zenodo.14066870).
 
 ## Features
 
