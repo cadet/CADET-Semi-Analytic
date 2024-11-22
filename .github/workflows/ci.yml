@@ -59,4 +59,4 @@ jobs:
 
     - name: Verify installation
       run: |
-        ./build/install/bin/chromatogram --version
+        ./build/install/bin/casema-cli --version
