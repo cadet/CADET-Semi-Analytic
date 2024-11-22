@@ -1,7 +1,8 @@
 # =============================================================================
 #  CADET-semi-analytic - The semi-analytic extension of CADET
 #  
-#  Copyright © 2015-2020: Samuel Leweke¹²
+#  Copyright © 2015-present: Samuel Leweke¹² and the CADET-Semi-Analytic
+#  authors, see the AUTHORS file
 #                                      
 #    ¹ Forschungszentrum Juelich GmbH, IBG-1, Juelich, Germany.
 #    ² University of Cologne, Cologne, Germany.
@@ -30,7 +31,8 @@ write_compiler_detection_header(
 // =============================================================================\n\
 //  CADET-semi-analytic - The semi-analytic extension of CADET\n\
 //  \n\
-//  Copyright © 2015-2020: Samuel Leweke¹²\n\
+//  Copyright © 2015-present: Samuel Leweke¹² and the CADET-Semi-Analytic
+//  authors, see the AUTHORS file\n\
 //  \n\
 //    ¹ Forschungszentrum Juelich GmbH, IBG-1, Juelich, Germany.\n\
 //    ² University of Cologne, Cologne, Germany.\n\
