@@ -130,9 +130,9 @@ target_include_directories(casema_io PUBLIC
 
 
 
-add_executable(chromatogram $<TARGET_OBJECTS:casema_common> $<TARGET_OBJECTS:casema_io> ProgressBar.cpp chromatogram.cpp)
-target_link_libraries(chromatogram PUBLIC CASEMA::CompileOptions PRIVATE GMP::GMP MPFR::MPFR MPC::MPC Eigen3::Eigen)
-target_include_directories(chromatogram PUBLIC 
+add_executable(casema-cli $<TARGET_OBJECTS:casema_common> $<TARGET_OBJECTS:casema_io> ProgressBar.cpp casema-cli.cpp)
+target_link_libraries(casema-cli PUBLIC CASEMA::CompileOptions PRIVATE GMP::GMP MPFR::MPFR MPC::MPC Eigen3::Eigen)
+target_include_directories(casema-cli PUBLIC 
 	"${CMAKE_BINARY_DIR}"
 	"${CMAKE_CURRENT_BINARY_DIR}"
 	"${CMAKE_CURRENT_SOURCE_DIR}"
@@ -144,19 +144,19 @@ target_include_directories(chromatogram PUBLIC
 
 if (OpenMP_FOUND)
 	target_link_libraries(casema_common PUBLIC OpenMP::OpenMP_CXX)
-	target_link_libraries(chromatogram PUBLIC OpenMP::OpenMP_CXX)
+	target_link_libraries(casema-cli PUBLIC OpenMP::OpenMP_CXX)
 endif()
 if (HDF5_FOUND)
 	target_link_libraries(casema_io PUBLIC HDF5::HDF5)
-	target_link_libraries(chromatogram PUBLIC HDF5::HDF5)
+	target_link_libraries(casema-cli PUBLIC HDF5::HDF5)
 endif()
 
 # ---------------------------------------------------
 #   Set installation related stuff
 # ---------------------------------------------------
 
-install(CODE "MESSAGE(\"\nInstall CHROMATOGRAM\n\")")
-install(TARGETS chromatogram RUNTIME)
+install(CODE "MESSAGE(\"\nInstall casema-cli\n\")")
+install(TARGETS casema-cli RUNTIME)
 
 ## Info message
-message(STATUS "Added CHROMATOGRAM module")
+message(STATUS "Added casema-cli module")
