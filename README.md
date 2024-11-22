@@ -3,7 +3,7 @@
 # CADET - Semi Analytic Extension
 
 The Chromatography Analysis and Design Toolkit (CADET) is developed at the Institute of Bio- and Geosciences 1 (IBG-1) of Forschungszentrum Jülich (FZJ) under supervision of Prof. Eric von Lieres.
-This is the semi analytic extension of the [core CADET project](https://github.com/modsim/cadet), of which both are freely distributed (under the terms of the GPLv3) as a contribution to the scientific community.
+This is the semi-analytic extension of the [CADET-Core project](https://github.com/cadet/cadet-core), of which both are freely distributed (under the terms of the GPLv3) as a contribution to the scientific community.
 If you find it useful for your own work, we would appreciate acknowledgements of this software and citations of our papers:
 
 * S. Leweke, E. von Lieres (2016): [Fast arbitrary order moments and arbitrary precision solution of the general rate model of column liquid chromatography with linear isotherm](https://doi.org/10.1016/j.compchemeng.2015.09.009), Computers & Chemical Engineering, 84, 350–362.
@@ -12,11 +12,11 @@ Please note that the results from the referenced publication can be reproduced e
 
 ## Features
 
-* Fast arbitrary order moments using the Laplace transform of the GRM, algorithmic differentiation, and extrapolation
+* Processes a comprehensive family of chromatography models ([2D GRM, GRM, LRMP, LRM, CSTR](https://cadet.github.io/master/modelling/index.html)) with one component and linear isotherm
+* Fast arbitrary order moments using the Laplace transform of the model, algorithmic differentiation, and extrapolation
 * Arbitrary inlet profiles via piecewise cubic polynomials in moment calculation
-* Arbitrary precision solution of the GRM using a numerical inverse Laplace transform (can optionally be combined with extrapolation)
-* Proven error bounds for GRM solutions in case of quasi-stationary binding
-* Processes one component general rate models (GRM) with linear isotherm
+* Arbitrary precision solution of the model using a numerical inverse Laplace transform (can optionally be combined with extrapolation)
+* Proven error bounds in case of quasi-stationary binding
 * Suited for dynamic and quasi-stationary binding
 * Shared memory parallelization using OpenMP
 * Supports XML and HDF5 as input formats, CSV for output
@@ -62,12 +62,9 @@ CADET-semi-analytic has been successfully built and run on the following platfor
 
 ## Using CADET-semi-analytic
 
-CADET-semi-analytic uses the same file format [CADET](https://github.com/modsim/cadet) does. However, it is limited to one component and linear isotherms. Example models taken from S. Qamar et al. (2014) "Analytical solutions and moment analysis of general rate model for linear liquid chromatography" (Chemical Engineering Science, 107, 192–205, doi: [10.1016/j.ces.2013.12.019](http://dx.doi.org/10.1016/j.ces.2013.12.019)) are provided in the folder `examples`.
+CADET-semi-analytic uses the [CADET file format](https://cadet.github.io/master/interface/index.html). However, it is limited to one component and linear isotherms. Example can be found in [CADET-Verification](https://github.com/cadet/CADET-Verification).
 
-Suppose your model is contained in the HDF5 file `model.h5`, then you can do the following things:
-
-* Compute the chromatogram via
-
+Suppose your model is contained in the HDF5 file `model.h5`, then you can compute the chromatogram via the command
   ```
 	casema-cli.exe model.h5 -o chromatogram.csv -e 1e-100 -p 250 -P 20 -t 4
   ```
