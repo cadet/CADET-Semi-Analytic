@@ -68,4 +68,13 @@ Suppose your model is contained in the HDF5 file `model.h5`, then you can comput
   ```
 	casema-cli.exe model.h5 -o chromatogram.csv -e 1e-100 -p 250 -P 20 -t 4
   ```
-  where no extrapolation method is used and, hence, the convergence detection tolerances are set to 0. This command also requests the usage of 250 decimal digits precision arithmetics (but only 20 digits of them are written to file), parallelization using 4 threads, and the total error to be less than 10^(-100). Extrapolation is enabled by adding `-x MET` to the command line, where `MET` is one of `ide`, `ads`, `wem`, `wrm`, `iad`, `lum`, `ltm`, `ibt`, `btm`, `nam`, `rem`, or `sgr`. The results are written to the file `chromatogram.csv`.
+  where no extrapolation method is used and, hence, the convergence detection tolerances are set to 0.
+  This command also requests the usage of 250 decimal digits precision arithmetics (but only 20 digits of them are written to file), parallelization using 4 threads, and the total error to be less than 10^(-100).
+  Extrapolation is enabled by adding `-x MET` to the command line, where `MET` is one of `ide`, `ads`, `wem`, `wrm`, `iad`, `lum`, `ltm`, `ibt`, `btm`, `nam`, `rem`, or `sgr`.
+  The results are written to the file `chromatogram.csv`.
+
+Alternatively, you can choose to write the output to the H5 input file, following the CADET file format.
+Note, however, that in this mode, the output precision is constrained by the H5 format, which does not support arbitrary precision, and is instead limited by the numerical limits of the C++ double type.
+  ```
+	casema-cli.exe model.h5 -e 1e-100 -p 250 -P 20 -t 4
+  ```

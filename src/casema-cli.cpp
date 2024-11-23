@@ -93,11 +93,153 @@ private:
 	int _prevPhase;
 };
 
-
-void writeMeta(std::ostream& os, const casema::model::ModelSystem& model, const ProgramOptions& opts)
+#ifdef ENABLE_HDF5
+void writeMetaAndResultToH5(const ProgramOptions& opts, const casema::model::ModelSystem* sys, const std::vector<mpfr::mpreal>& solutionTimes, const casema::util::SlicedVector<mpfr::mpreal>& output, const double time_sim, const int timeOffset)
 {
-	os << "# Version: " << casema::getVersion() << "\n";
-	os << "# Commit: " << casema::getCommitHash() << "\n";
+	casema::io::IFileWriter* writer = casema::io::createWriter("h5");
+
+	bool split_ports = true; // from CADET file format
+	bool single_as_multi_port = false; // from CADET file format
+
+	if (opts.outFile.empty()) // write to input file
+	{
+		casema::io::IFileReader* reader = casema::io::createReader("h5");
+		reader->openFile(opts.inFile, "r");
+		reader->pushGroup("input");
+		reader->pushGroup("return");
+		if (reader->exists("SINGLE_AS_MULTI_PORT"))
+			single_as_multi_port = reader->getBool("SINGLE_AS_MULTI_PORT");
+
+		reader->closeFile();
+		writer->openFile(opts.inFile, "rw");
+	}
+	else if (opts.outFile == opts.inFile)
+	{
+		casema::io::IFileReader* reader = casema::io::createReader("h5");
+		reader->openFile(opts.outFile, "r");
+		reader->pushGroup("input");
+		reader->pushGroup("return");
+		if (reader->exists("SINGLE_AS_MULTI_PORT"))
+			single_as_multi_port = reader->getBool("SINGLE_AS_MULTI_PORT");
+
+		reader->closeFile();
+		writer->openFile(opts.outFile, "rw");
+	}
+	else // create output file
+		writer->openFile(opts.outFile, "co");
+
+	// Write meta data
+	writer->deleteGroup("meta");
+	writer->pushGroup("meta");
+	writer->writeString("CASEMA_VERSION", casema::getVersion());
+	writer->writeString("CASEMA_BRANCH", casema::getBranchRefspec());
+	writer->writeString("CASEMA_COMMIT", casema::getCommitHash());
+	writer->writeInt("FILE_FORMAT", casema::getFileFormat());
+	writer->writeDouble("TIME_SIM", time_sim);
+	{
+		std::ostringstream oss;
+		oss << opts.errorTrunc + opts.errorCons;
+		writer->writeString("ERROR", oss.str());
+	}
+	writer->popGroup();
+
+	// Write program options
+	writer->deleteGroup("program_options");
+	writer->pushGroup("program_options");
+	writer->writeBool("KAHAN_SUMMATION", opts.kahan);
+	writer->writeBool("IGNORE_CSTR", opts.ignoreCSTR);
+#ifdef ENABLE_BESSEL_TRUNCATION
+	writer->writeBool("BESSEL_FUNCTION_TRUNCATION", true);
+#else
+	writer->writeBool("BESSEL_FUNCTION_TRUNCATION", false);
+#endif
+	{
+		std::ostringstream oss;
+		oss << mpfr::digits2bits(opts.precision);
+		writer->writeString("PRECISION", oss.str());
+		oss.str("");
+		//writer->writeDouble("OUTPUT_PRECISION", std::numeric_limits<double>::digits10 + 1);
+
+		writer->writeBool("EXTRAPOLATION", false);
+		writer->writeInt("MAX_LAPLACE_SUMMANDS", opts.laplaceSummands);
+		writer->writeInt("MAX_HANKEL_SUMMANDS", opts.hankelSummands);
+		oss << opts.abscissa;
+		writer->writeString("ABSCISSA", oss.str());
+		oss.str("");
+		oss << opts.errorCons;
+		writer->writeString("CONSISTENCY_ERROR", oss.str());
+		oss.str("");
+		oss << opts.errorTrunc;
+		writer->writeString("TRUNCATION_ERROR", oss.str());
+		oss.str("");
+		oss << opts.errorTrunc + opts.errorCons;
+		writer->writeString("ERROR", oss.str());
+		oss.str("");
+		oss << opts.error;
+		writer->writeString("REQUESTED_ERROR", oss.str());
+		oss.str("");
+		oss << opts.errorWeight;
+		writer->writeString("ERROR_WEIGHT", oss.str());
+	}
+	writer->popGroup();
+
+	writer->deleteGroup("output");
+	writer->pushGroup("output");
+
+	writer->pushGroup("solution");
+
+	const int timePoints = solutionTimes.size() - timeOffset;
+	std::vector<double> solutionBuffer(timePoints);
+
+	const int numUnits = sys->numModels();
+	const int numOutlets = sys->numOutlets();
+	int numWrittenOutlets = 0;
+
+	for (int i = 0; i < timePoints; i++)
+		solutionBuffer[i] = static_cast<double>(solutionTimes[i + timeOffset]);
+
+	writer->writeVectorDouble("SOLUTION_TIMES", timePoints, &solutionBuffer[0], 1, timePoints);
+
+	std::ostringstream oss;
+
+	for (int j = 0; j < numUnits; ++j)
+	{
+		oss << std::setw(3) << std::setfill('0') << j;
+		writer->pushGroup("unit_" + oss.str());
+		oss.str("");
+
+		const int nPorts = std::max(1, sys->unitOperation(j)->numOutletPorts());
+
+		// always split ports
+		for (int k = 0; k < nPorts; ++k)
+		{
+			for (int i = 0; i < timePoints; i++)
+				solutionBuffer[i] = static_cast<double>(output(numWrittenOutlets, i));
+
+			oss << std::setw(3) << std::setfill('0') << k;
+			const std::string outName = (single_as_multi_port || nPorts > 1) ? "SOLUTION_OUTLET_PORT_" + oss.str() : "SOLUTION_OUTLET";
+
+			writer->writeVectorDouble(outName, timePoints, &solutionBuffer[0], 1, timePoints);
+			oss.str("");
+
+			numWrittenOutlets++;
+		}
+		writer->popGroup();
+	}
+
+	writer->closeFile();
+}
+#endif
+
+void writeMeta(std::ostream& os, const casema::model::ModelSystem& model, const ProgramOptions& opts, const double simTime)
+{
+	os << "# CASEMA Version: " << casema::getVersion() << "\n";
+	os << "# CASEMA Branch: " << casema::getBranchRefspec() << "\n";
+	os << "# CASEMA Commit: " << casema::getCommitHash() << "\n";
+	os << "# CASEMA File Format: " << casema::getFileFormat() << "\n";
+	if(simTime > 0.0)
+		os << "# Compute time: " << simTime << "\n";
+
 	if (opts.kahan)
 		os << "# Kahan summation: On\n";
 	else
@@ -434,23 +576,46 @@ int main(int argc, char** argv)
 		std::cout << "[DONE]" << std::endl;
 	}
 
-	writeMeta(std::cout, *sys, opts);
+	writeMeta(std::cout, *sys, opts, -1.0);
 
 	std::cout << "Starting Laplace inversion" << std::endl;
 
+	const auto start = std::chrono::high_resolution_clock::now();
+
 	const casema::util::SlicedVector<mpfr::mpreal> output = invert(*sys, maxTime, st.solutionTimes, timeOffset, opts);
 
+	const double time_sim = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - start).count();
+
 	std::cout << "Writing output" << std::endl;
-	if (opts.outFile.empty())
+
+#ifdef ENABLE_HDF5
+	// Check if input file is h5 file and if so, write to that. Otherwise, print to console
+	bool inIsH5 = false;
+	const std::size_t dotPos = opts.inFile.find_last_of('.');
+
+	if (dotPos != std::string::npos && dotPos != 0)
 	{
-		writeResult(std::cout, st.solutionTimes, output, opts.outPrecision, timeOffset, *sys);
+		if ((opts.inFile.substr(dotPos + 1) == "h5"))
+		{
+			inIsH5 = true;
+
+			writeMetaAndResultToH5(opts, sys, st.solutionTimes, output, time_sim, timeOffset);
+		}
 	}
-	else
+	if (!inIsH5)
+#endif
 	{
-		std::ofstream fs(opts.outFile, std::ofstream::out | std::ofstream::trunc);
-		
-		writeMeta(fs, *sys, opts);
-		writeResult(fs, st.solutionTimes, output, opts.outPrecision, timeOffset, *sys);
+		if (opts.outFile.empty())
+		{
+			writeResult(std::cout, st.solutionTimes, output, opts.outPrecision, timeOffset, *sys);
+		}
+		else
+		{
+			std::ofstream fs(opts.outFile, std::ofstream::out | std::ofstream::trunc);
+
+			writeMeta(fs, *sys, opts, time_sim);
+			writeResult(fs, st.solutionTimes, output, opts.outPrecision, timeOffset, *sys);
+		}
 	}
 
 	::mpfr_free_cache();
