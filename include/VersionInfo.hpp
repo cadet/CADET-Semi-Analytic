@@ -29,6 +29,7 @@ namespace casema
 	const char* getCompiler() CASEMA_NOEXCEPT;
 	const char* getCompilerFlags() CASEMA_NOEXCEPT;
 	const char* getBuildHost() CASEMA_NOEXCEPT;
+	const int getFileFormat() CASEMA_NOEXCEPT;
 
 } // namespace casema
 

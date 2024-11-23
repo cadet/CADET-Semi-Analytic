@@ -26,6 +26,11 @@ namespace casema
 	const char BUILD_HOST[] = "@CMAKE_SYSTEM@";
 	const char COMPILER_FLAGS[] = "@CMAKE_CXX_FLAGS@";
 
+	const int getFileFormat() CASEMA_NOEXCEPT
+	{
+		return 40000; // CADET file format
+	}
+
 	const char* getVersion() CASEMA_NOEXCEPT
 	{
 		return casema::CASEMA_VERSION;
