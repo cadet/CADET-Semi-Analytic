@@ -73,6 +73,13 @@ public:
 	virtual bool configure(io::IParameterProvider& paramProvider);
 
 	/**
+	 * @brief Returns the secondary spatial coordinates if existent
+	 * @details Unit operations that have a second spatial coordinate can have ports at specific coordinates
+	 * @return secondary spatial coordinates
+	 */
+	virtual const std::vector<mpfr::mpreal>& secondaryCoordinates() const CASEMA_NOEXCEPT { return {}; }
+
+	/**
 	 * @brief Returns the number of components
 	 * @details It is assumed that the number of components is also the number of inputs
 	 *          and outputs of the unit operation.

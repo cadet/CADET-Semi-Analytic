@@ -70,6 +70,7 @@ public:
 	virtual const char* unitOperationName() const CASEMA_NOEXCEPT { return "GENERAL_RATE_MODEL_2D"; }
 
 	virtual bool configure(io::IParameterProvider& paramProvider);
+	virtual const std::vector<mpfr::mpreal>& secondaryCoordinates() const CASEMA_NOEXCEPT override;
 
 	virtual void evaluate(const mpfr::mpcomplex& s, Eigen::Ref<Eigen::MatrixCmp> h, Eigen::Ref<Eigen::VectorCmp> g) const CASEMA_NOEXCEPT;
 	virtual void evaluate(const mpfr::mpcomplex& s, const mpfr::mpreal& z, Eigen::Ref<Eigen::MatrixCmp> h, Eigen::Ref<Eigen::VectorCmp> g) const CASEMA_NOEXCEPT;
