@@ -205,8 +205,9 @@ void writeMetaAndResultToH5(const ProgramOptions& opts, const casema::model::Mod
 	for (int j = 0; j < numUnits; ++j)
 	{
 		oss << std::setw(3) << std::setfill('0') << j;
-		writer->pushGroup("unit_" + oss.str());
+		std::string unitName = "unit_" + oss.str();
 		oss.str("");
+		writer->pushGroup(unitName);
 
 		const int nPorts = std::max(1, sys->unitOperation(j)->numOutletPorts());
 
@@ -231,12 +232,14 @@ void writeMetaAndResultToH5(const ProgramOptions& opts, const casema::model::Mod
 		{
 			writer->popGroup(); // pop solution
 			writer->pushGroup("coordinates");
+			writer->pushGroup(unitName);
 
 			for (int i = 0; i < nPorts; i++)
 				solutionBuffer[i] = static_cast<double>(sys->unitOperation(j)->secondaryCoordinates()[i]);
 
 			writer->writeVectorDouble("RADIAL_COORDINATES", nPorts, solutionBuffer.data(), 1, nPorts);
 
+			writer->popGroup(); // pop unit_xxx
 			writer->popGroup(); // pop coordinates
 			writer->pushGroup("solution");
 
