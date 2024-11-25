@@ -107,6 +107,8 @@ void writeMetaAndResultToH5(const ProgramOptions& opts, const casema::model::Mod
 		reader->openFile(opts.inFile, "r");
 		reader->pushGroup("input");
 		reader->pushGroup("return");
+		if (reader->exists("SPLIT_PORTS_DATA"))
+			split_ports = reader->getBool("SPLIT_PORTS_DATA");
 		if (reader->exists("SINGLE_AS_MULTI_PORT"))
 			single_as_multi_port = reader->getBool("SINGLE_AS_MULTI_PORT");
 
@@ -119,6 +121,8 @@ void writeMetaAndResultToH5(const ProgramOptions& opts, const casema::model::Mod
 		reader->openFile(opts.outFile, "r");
 		reader->pushGroup("input");
 		reader->pushGroup("return");
+		if (reader->exists("SPLIT_PORTS_DATA"))
+			split_ports = reader->getBool("SPLIT_PORTS_DATA");
 		if (reader->exists("SINGLE_AS_MULTI_PORT"))
 			single_as_multi_port = reader->getBool("SINGLE_AS_MULTI_PORT");
 
@@ -195,6 +199,15 @@ void writeMetaAndResultToH5(const ProgramOptions& opts, const casema::model::Mod
 	const int numOutlets = sys->numOutlets();
 	int numWrittenOutlets = 0;
 
+	if (!split_ports) // resize if ports data should be written together
+	{
+		int maxNumPorts = 1;
+		for (int j = 0; j < numUnits; ++j)
+			maxNumPorts = std::max(maxNumPorts, sys->unitOperation(j)->numOutletPorts());
+
+		solutionBuffer.push_back(maxNumPorts * timePoints);
+	}
+
 	for (int i = 0; i < timePoints; i++)
 		solutionBuffer[i] = static_cast<double>(solutionTimes[i + timeOffset]);
 
@@ -204,30 +217,60 @@ void writeMetaAndResultToH5(const ProgramOptions& opts, const casema::model::Mod
 
 	for (int j = 0; j < numUnits; ++j)
 	{
+		std::cout << "hmpf\n";
+
 		oss << std::setw(3) << std::setfill('0') << j;
 		writer->pushGroup("unit_" + oss.str());
 		oss.str("");
 
 		const int nPorts = std::max(1, sys->unitOperation(j)->numOutletPorts());
 
-		// always split ports
-		for (int k = 0; k < nPorts; ++k)
+		if (false/*split_ports || nPorts == 1*/) // write vectors for each port
 		{
-			for (int i = 0; i < timePoints; i++)
-				solutionBuffer[i] = static_cast<double>(output(numWrittenOutlets, i));
+			for (int k = 0; k < nPorts; ++k)
+			{
+				for (int i = 0; i < timePoints; i++)
+					solutionBuffer[i] = static_cast<double>(output(numWrittenOutlets, i));
 
-			oss << std::setw(3) << std::setfill('0') << k;
-			const std::string outName = (single_as_multi_port || nPorts > 1) ? "SOLUTION_OUTLET_PORT_" + oss.str() : "SOLUTION_OUTLET";
+				oss << std::setw(3) << std::setfill('0') << k;
+				const std::string outName = (single_as_multi_port || nPorts > 1) ? "SOLUTION_OUTLET_PORT_" + oss.str() : "SOLUTION_OUTLET";
 
-			writer->writeVectorDouble(outName, timePoints, &solutionBuffer[0], 1, timePoints);
-			oss.str("");
+				writer->writeVectorDouble(outName, timePoints, &solutionBuffer[0], 1, timePoints);
+				oss.str("");
 
-			numWrittenOutlets++;
+				numWrittenOutlets++;
+			}
 		}
+		else
+		{
+			const int nPorts = std::max(1, sys->unitOperation(j)->numOutletPorts());
+			std::cout << "jojo0\n";
+
+			for (int i = 0; i < timePoints; i++)
+			{
+				for (int k = 0; k < nPorts; ++k)
+					solutionBuffer[i * nPorts + k] = static_cast<double>(output(k + numWrittenOutlets, i));
+			}
+
+			for (int i = 0; i < timePoints; i++)
+			{
+				for (int k = 0; k < nPorts; ++k)
+					std::cout << solutionBuffer[i * nPorts + k] << ", ";
+				std::cout << std::endl;
+			}
+
+			writer->writeMatrixDouble("SOLUTION_OUTLET", timePoints, nPorts, solutionBuffer.data(), 1, 1);
+			std::cout << "jojo2\n";
+			numWrittenOutlets += nPorts;
+		}
+		std::cout << "jojo3\n";
 		writer->popGroup();
+		std::cout << "jojo4\n";
 	}
+	std::cout << "jojo5\n";
 
 	writer->closeFile();
+	std::cout << "jojo6\n";
 }
 #endif
 
