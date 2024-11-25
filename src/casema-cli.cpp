@@ -217,13 +217,15 @@ void writeMetaAndResultToH5(const ProgramOptions& opts, const casema::model::Mod
 
 	for (int j = 0; j < numUnits; ++j)
 	{
+		std::cout << "hmpf\n";
+
 		oss << std::setw(3) << std::setfill('0') << j;
 		writer->pushGroup("unit_" + oss.str());
 		oss.str("");
 
 		const int nPorts = std::max(1, sys->unitOperation(j)->numOutletPorts());
 
-		if (split_ports || nPorts == 1) // write vectors for each port
+		if (false/*split_ports || nPorts == 1*/) // write vectors for each port
 		{
 			for (int k = 0; k < nPorts; ++k)
 			{
@@ -242,6 +244,7 @@ void writeMetaAndResultToH5(const ProgramOptions& opts, const casema::model::Mod
 		else
 		{
 			const int nPorts = std::max(1, sys->unitOperation(j)->numOutletPorts());
+			std::cout << "jojo0\n";
 
 			for (int i = 0; i < timePoints; i++)
 			{
@@ -257,12 +260,17 @@ void writeMetaAndResultToH5(const ProgramOptions& opts, const casema::model::Mod
 			}
 
 			writer->writeMatrixDouble("SOLUTION_OUTLET", timePoints, nPorts, solutionBuffer.data(), 1, 1);
+			std::cout << "jojo2\n";
 			numWrittenOutlets += nPorts;
 		}
+		std::cout << "jojo3\n";
 		writer->popGroup();
+		std::cout << "jojo4\n";
 	}
+	std::cout << "jojo5\n";
 
 	writer->closeFile();
+	std::cout << "jojo6\n";
 }
 #endif
 
