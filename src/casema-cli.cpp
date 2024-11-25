@@ -198,7 +198,7 @@ void writeMetaAndResultToH5(const ProgramOptions& opts, const casema::model::Mod
 	for (int i = 0; i < timePoints; i++)
 		solutionBuffer[i] = static_cast<double>(solutionTimes[i + timeOffset]);
 
-	writer->writeVectorDouble("SOLUTION_TIMES", timePoints, &solutionBuffer[0], 1, timePoints);
+	writer->writeVectorDouble("SOLUTION_TIMES", timePoints, solutionBuffer.data(), 1, timePoints);
 
 	std::ostringstream oss;
 
@@ -219,12 +219,28 @@ void writeMetaAndResultToH5(const ProgramOptions& opts, const casema::model::Mod
 			oss << std::setw(3) << std::setfill('0') << k;
 			const std::string outName = (single_as_multi_port || nPorts > 1) ? "SOLUTION_OUTLET_PORT_" + oss.str() : "SOLUTION_OUTLET";
 
-			writer->writeVectorDouble(outName, timePoints, &solutionBuffer[0], 1, timePoints);
+			writer->writeVectorDouble(outName, timePoints, solutionBuffer.data(), 1, timePoints);
 			oss.str("");
 
 			numWrittenOutlets++;
 		}
-		writer->popGroup();
+		writer->popGroup(); // pop unit_xxx
+
+		// 2D models: write secondary (2D GRM: radial) coordinate
+		if (nPorts > 1)
+		{
+			writer->popGroup(); // pop solution
+			writer->pushGroup("coordinates");
+
+			for (int i = 0; i < nPorts; i++)
+				solutionBuffer[i] = static_cast<double>(sys->unitOperation(j)->secondaryCoordinates()[i]);
+
+			writer->writeVectorDouble("RADIAL_COORDINATES", nPorts, solutionBuffer.data(), 1, nPorts);
+
+			writer->popGroup(); // pop coordinates
+			writer->pushGroup("solution");
+
+		}
 	}
 
 	writer->closeFile();
