@@ -44,7 +44,7 @@ namespace
 	}
 }
 
-TEST_CASE("Dini's expansion (r^2)", "[Bessel]")
+TEST_CASE("Dini's expansion (r^2)", "[Bessel],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(64));
 
@@ -69,7 +69,7 @@ TEST_CASE("Dini's expansion (r^2)", "[Bessel]")
 	}
 }
 
-TEST_CASE("Dini's expansion (1-r^2)^-1", "[Bessel]")
+TEST_CASE("Dini's expansion (1-r^2)^-1", "[Bessel],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(64));
 

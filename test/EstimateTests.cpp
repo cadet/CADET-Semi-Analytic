@@ -216,7 +216,7 @@ namespace
 	}
 }
 
-TEST_CASE("Time domain upper bound linear chain GRM", "[Estimate]")
+TEST_CASE("Time domain upper bound linear chain GRM", "[Estimate],[GRM],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(20));
 
@@ -239,7 +239,7 @@ TEST_CASE("Time domain upper bound linear chain GRM", "[Estimate]")
 	CHECK(sys->timeDomainUpperBound() == cIn);
 }
 
-TEST_CASE("Time domain upper bound linear chain 2xGRM", "[Estimate]")
+TEST_CASE("Time domain upper bound linear chain 2xGRM", "[Estimate],[GRM],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(20));
 
@@ -266,7 +266,7 @@ TEST_CASE("Time domain upper bound linear chain 2xGRM", "[Estimate]")
 	CHECK(sys->timeDomainUpperBound() == cIn);
 }
 
-TEST_CASE("Time domain upper bound DAG GRM", "[Estimate]")
+TEST_CASE("Time domain upper bound DAG GRM", "[Estimate],[GRM],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(20));
 
@@ -301,7 +301,7 @@ TEST_CASE("Time domain upper bound DAG GRM", "[Estimate]")
 	CHECK(abs(sys->timeDomainUpperBound() - std::max(cIn, cIn2)) <= mpfr::mpreal("1e-10"));
 }
 
-TEST_CASE("Time domain upper bound DAG CSTR", "[Estimate]")
+TEST_CASE("Time domain upper bound DAG CSTR", "[Estimate],[GRM],[CSTR],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(20));
 
@@ -336,7 +336,7 @@ TEST_CASE("Time domain upper bound DAG CSTR", "[Estimate]")
 	CHECK(abs(sys->timeDomainUpperBound() - std::max(cIn, cIn2)) <= mpfr::mpreal("1e-10"));
 }
 
-TEST_CASE("Estimate vs inverse GRM", "[Estimate][Unit]")
+TEST_CASE("Estimate vs inverse GRM", "[Estimate],[Unit],[GRM],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(40));
 
@@ -376,7 +376,7 @@ TEST_CASE("Estimate vs inverse GRM", "[Estimate][Unit]")
 	}
 }
 
-TEST_CASE("Estimate vs inverse CSTR", "[Estimate][Unit]")
+TEST_CASE("Estimate vs inverse CSTR", "[Estimate],[Unit],[CSTR],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(40));
 
@@ -416,7 +416,7 @@ TEST_CASE("Estimate vs inverse CSTR", "[Estimate][Unit]")
 	}
 }
 
-TEST_CASE("Truncation error DAG GRM", "[Estimate]")
+TEST_CASE("Truncation error DAG GRM", "[Estimate],[GRM],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(20));
 
@@ -471,7 +471,7 @@ TEST_CASE("Truncation error DAG GRM", "[Estimate]")
 	CHECK(abs((truncErr - ref) / ref) <= mpfr::mpreal("1e-16"));
 }
 
-TEST_CASE("Truncation error DAG CSTR", "[Estimate]")
+TEST_CASE("Truncation error DAG CSTR", "[Estimate],[CSTR],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(20));
 
@@ -526,7 +526,7 @@ TEST_CASE("Truncation error DAG CSTR", "[Estimate]")
 	CHECK(abs((truncErr - ref) / ref) <= mpfr::mpreal("1e-16"));
 }
 
-TEST_CASE("Truncation error DAG GRM-CSTR", "[Estimate]")
+TEST_CASE("Truncation error DAG GRM-CSTR", "[Estimate],[GRM],[CSTR],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(20));
 
@@ -581,7 +581,7 @@ TEST_CASE("Truncation error DAG GRM-CSTR", "[Estimate]")
 	CHECK(abs((truncErr - ref) / ref) <= mpfr::mpreal("1e-16"));
 }
 
-TEST_CASE("Truncation error two chains", "[Estimate]")
+TEST_CASE("Truncation error two chains", "[Estimate],[GRM],[CSTR],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(20));
 
@@ -635,7 +635,7 @@ TEST_CASE("Truncation error two chains", "[Estimate]")
 	CHECK(abs((truncErr - ref) / ref) <= mpfr::mpreal("1e-16"));
 }
 
-TEST_CASE("Error estimate DAG GRM", "[Estimate]")
+TEST_CASE("Error estimate DAG GRM", "[Estimate],[GRM],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(30));
 
@@ -680,7 +680,7 @@ TEST_CASE("Error estimate DAG GRM", "[Estimate]")
 	CHECK(consError + exp(2 * abscissa * T) / T * truncErr <= error);
 }
 
-TEST_CASE("Error estimate DAG CSTR", "[Estimate]")
+TEST_CASE("Error estimate DAG CSTR", "[Estimate],[CSTR],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(30));
 
@@ -725,7 +725,7 @@ TEST_CASE("Error estimate DAG CSTR", "[Estimate]")
 	CHECK(consError + exp(2 * abscissa * T) / T * truncErr <= error);
 }
 
-TEST_CASE("Error estimate DAG GRM-CSTR", "[Estimate]")
+TEST_CASE("Error estimate DAG GRM-CSTR", "[Estimate],[GRM],[CSTR],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(30));
 
@@ -770,7 +770,7 @@ TEST_CASE("Error estimate DAG GRM-CSTR", "[Estimate]")
 	CHECK(consError + exp(2 * abscissa * T) / T * truncErr <= error);
 }
 
-TEST_CASE("Error estimate two chains", "[Estimate]")
+TEST_CASE("Error estimate two chains", "[Estimate],[GRM],[CSTR],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(30));
 

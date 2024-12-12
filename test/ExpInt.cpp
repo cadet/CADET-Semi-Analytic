@@ -27,7 +27,7 @@ namespace
 	}
 }
 
-TEST_CASE("ExpInt and inverseExpInt", "[ExpInt]")
+TEST_CASE("ExpInt and inverseExpInt", "[ExpInt],[CI]")
 {
 	// Test with 16, 32, 64 digits precision
 	int prec = 16;
