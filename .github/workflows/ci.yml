@@ -5,6 +5,13 @@ on:
     branches:
       - master
   pull_request:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Commit hash, branch name, or tag to run the CI pipeline for'
+        required: false
+        default: 'HEAD'
+        type: string
 
 jobs:
   build:
