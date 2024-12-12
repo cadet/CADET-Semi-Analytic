@@ -132,7 +132,7 @@ namespace
 	}
 }
 
-TEST_CASE("GRM vs GRM2D single zone", "[Bessel][GRM]")
+TEST_CASE("GRM vs GRM2D single zone", "[Bessel],[GRM],[2DGRM],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(30));
 
@@ -180,7 +180,7 @@ TEST_CASE("GRM vs GRM2D single zone", "[Bessel][GRM]")
 	CHECK((g1-g2).array().abs().maxCoeff() <= 500 * std::numeric_limits<mpfr::mpreal>::epsilon());
 }
 
-TEST_CASE("GRM vs GRM2D two zones", "[Bessel][GRM]")
+TEST_CASE("GRM vs GRM2D two zones", "[Bessel],[GRM],[2DGRM],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(30));
 

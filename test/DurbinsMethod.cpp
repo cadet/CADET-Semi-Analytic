@@ -19,7 +19,7 @@
 
 #include <vector>
 
-TEST_CASE("Inverse Laplace exp(-2 * sqrt(s)) single", "[Durbin]")
+TEST_CASE("Inverse Laplace exp(-2 * sqrt(s)) single", "[Durbin],[CI]")
 {
 	const std::size_t precision = 50;
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(precision));
@@ -76,7 +76,7 @@ TEST_CASE("Inverse Laplace exp(-2 * sqrt(s)) single", "[Durbin]")
 	}
 }
 
-TEST_CASE("Inverse Laplace exp(-2 * sqrt(s)) two outlets", "[Durbin]")
+TEST_CASE("Inverse Laplace exp(-2 * sqrt(s)) two outlets", "[Durbin],[CI]")
 {
 	const std::size_t precision = 50;
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(precision));

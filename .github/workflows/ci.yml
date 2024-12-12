@@ -14,7 +14,7 @@ on:
         type: string
 
 jobs:
-  build:
+  ubuntu-latest:
     runs-on: ubuntu-latest
 
     steps:
@@ -53,7 +53,7 @@ jobs:
               -DCMAKE_CXX_COMPILER=g++ \
               -DCMAKE_C_COMPILER=gcc \
               -DUSE_FADBAD=ON \
-              -DENABLE_TESTS=OFF \
+              -DENABLE_TESTS=ON \
               ..
 
     - name: Build
@@ -67,3 +67,7 @@ jobs:
     - name: Verify installation
       run: |
         ./build/install/bin/casema-cli --version
+
+    - name: Run the tests
+      run: |
+        ./build/test/testRunner [CI]

@@ -192,7 +192,7 @@ namespace
 	}
 }
 
-TEST_CASE("Joint system solution single port units", "[System]")
+TEST_CASE("Joint system solution single port units", "[System],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(30));
 
@@ -240,7 +240,7 @@ TEST_CASE("Joint system solution single port units", "[System]")
 		CHECK(abs(solL[i] - solJ[i]) <= 10 * std::numeric_limits<mpfr::mpreal>::epsilon());
 }
 
-TEST_CASE("Joint system solution two chains single port", "[System]")
+TEST_CASE("Joint system solution two chains single port", "[System],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(30));
 
@@ -287,7 +287,7 @@ TEST_CASE("Joint system solution two chains single port", "[System]")
 		CHECK(abs(solL[i] - solJ[i]) <= 10 * std::numeric_limits<mpfr::mpreal>::epsilon());
 }
 
-TEST_CASE("Joint system solution multiple ports", "[System]")
+TEST_CASE("Joint system solution multiple ports", "[System],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(30));
 
@@ -351,7 +351,7 @@ TEST_CASE("Joint system solution multiple ports", "[System]")
 		CHECK(abs(solL[i] - solJ[i]) <= 10 * std::numeric_limits<mpfr::mpreal>::epsilon());
 }
 
-TEST_CASE("Joint system solution multiple ports single out", "[System]")
+TEST_CASE("Joint system solution multiple ports single out", "[System],[CI]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(30));
 
