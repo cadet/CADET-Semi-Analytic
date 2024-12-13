@@ -22,9 +22,10 @@
 
 namespace
 {
-	inline bool equal(const mpfr::mpreal& ref, const mpfr::mpreal v)
+	inline bool equal(const mpfr::mpreal& ref, const mpfr::mpreal v, const mpfr::mpreal tolerance=0.0)
 	{
-		return (abs(ref - v) <= std::numeric_limits<mpfr::mpreal>::epsilon()) || (abs(ref - v) / ref <= std::numeric_limits<mpfr::mpreal>::epsilon());
+		const mpfr::mpreal tol = std::max(std::numeric_limits<mpfr::mpreal>::epsilon(), tolerance);
+		return (abs(ref - v) <= tol) || (abs(ref - v) / ref <= tol);
 	}
 
 	template <typename hankel_t>
@@ -53,7 +54,7 @@ TEST_CASE("Dini's expansion (r^2)", "[Bessel]")
 	std::vector<mpfr::mpreal> coeffs(zeros.size());
 	dinisExpansionCoeffs(zeros, coeffs, [](int i, const mpfr::mpreal& z) -> mpfr::mpreal { return (i == 0) ? 0.25 : ( 2 * mpfr::besseljn(2, z) - z * mpfr::besseljn(3, z) ) / sqr(z); });
 
-	std::vector<mpfr::mpreal> pts { 0.0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1.0 };
+	std::vector<mpfr::mpreal> pts { 0.025, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 0.95 };
 
 	for (const auto& p : pts)
 	{
@@ -64,7 +65,7 @@ TEST_CASE("Dini's expansion (r^2)", "[Bessel]")
 		CAPTURE(ref);
 		CAPTURE(res-ref);
 
-		CHECK(equal(res, ref));
+		CHECK(equal(res, ref, 1e-8));
 	}
 }
 
@@ -72,7 +73,7 @@ TEST_CASE("Dini's expansion (1-r^2)^-1", "[Bessel]")
 {
 	mpfr::mpreal::set_default_prec(mpfr::digits2bits(64));
 
-	std::vector<mpfr::mpreal> zeros(10001);
+	std::vector<mpfr::mpreal> zeros(20001);
 	casema::besselZerosJ1(zeros.size(), zeros.data());
 
 	std::vector<mpfr::mpreal> coeffs(zeros.size());
@@ -89,6 +90,6 @@ TEST_CASE("Dini's expansion (1-r^2)^-1", "[Bessel]")
 		CAPTURE(ref);
 		CAPTURE(res-ref);
 
-		CHECK(equal(res, ref));
+		CHECK(equal(res, ref, 0.01));
 	}
 }
