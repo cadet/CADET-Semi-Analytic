@@ -10,7 +10,7 @@ on:
       ref:
         description: 'Commit hash, branch name, or tag to run the CI pipeline for'
         required: false
-        default: 'HEAD'
+        default: 'master'
         type: string
 
 jobs:
