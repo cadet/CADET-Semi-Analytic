@@ -123,13 +123,6 @@ bool GeneralRateModel2D::configure(io::IParameterProvider& paramProvider)
 
 const std::vector<mpfr::mpreal>& GeneralRateModel2D::secondaryCoordinates() const CASEMA_NOEXCEPT
 {
-	if (_radialEdges.size() < 2)
-		return _radialEdges;
-
-	std::vector<mpfr::mpreal> coords;
-	for (size_t i = 0; i < _radialEdges.size() - 1; ++i)
-		coords.push_back((_radialEdges[i] + _radialEdges[i + 1]) / 2.0);
-
 	return _radialEdges;
 }
 
