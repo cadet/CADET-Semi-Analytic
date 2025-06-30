@@ -78,3 +78,5 @@ Note, however, that in this mode, the output precision is constrained by the H5 
   ```
 	casema-cli.exe model.h5 -e 1e-100 -p 250 -P 20 -t 4
   ```
+
+***The interface and further information on program options is documented in the [Interface Documentation](doc/interface.md).***
