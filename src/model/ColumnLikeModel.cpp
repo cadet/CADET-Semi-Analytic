@@ -50,38 +50,36 @@ bool ColumnLikeModel::configure(io::IParameterProvider& paramProvider)
 
 	// Read geometry parameters
 	const std::string unitType = paramProvider.getString("UNIT_TYPE");
-	if (unitType != "DPFR")
+
+	int numParType = paramProvider.exists("NPARTYPE") ? paramProvider.getInt("NPARTYPE") : 0;
+
+	if (unitType == "LUMPED_RATE_MODEL_WITHOUT_PORES")
+		_colPorosity = paramProvider.getDouble("TOTAL_POROSITY");
+	else
 	{
-		if ((unitType != "LUMPED_RATE_MODEL_WITHOUT_PORES") && (unitType != "LRM"))
+		if (unitType == "COLUMN_MODEL_1D")
 		{
-			if ((unitType == "GENERAL_RATE_MODEL_2D") && paramProvider.isArray("COL_POROSITY"))
+			if paramProvider.exists("NPARTYPE")
+		}
+		if ((unitType == "GENERAL_RATE_MODEL_2D" || unitType == "COLUMN_MODEL_2D") && paramProvider.isArray("COL_POROSITY"))
+		{
+			const std::vector<double> cp = paramProvider.getDoubleArray("COL_POROSITY");
+			for (int i = 1; i < cp.size(); ++i)
 			{
-				const std::vector<double> cp = paramProvider.getDoubleArray("COL_POROSITY");
-				for (int i = 1; i < cp.size(); ++i)
-				{
-					if (cp[0] != cp[i])
-						throw InvalidParameterException("Field COL_POROSITY has to have the same value if it is an array");
-				}
-
-				_colPorosity = cp[0];
+				if (cp[0] != cp[i])
+					throw InvalidParameterException("Field COL_POROSITY has to have the same value if it is an array");
 			}
-			else
-			{
-				if (paramProvider.isArray("COL_POROSITY"))
-					throw InvalidParameterException("Only scalar COL_POROSITY supported");
 
-				_colPorosity = paramProvider.getDouble("COL_POROSITY");
-			}
+			_colPorosity = cp[0];
 		}
 		else
-			_colPorosity = paramProvider.getDouble("TOTAL_POROSITY");
-	}
-	else
-		_colPorosity = 1.0;
+		{
+			if (paramProvider.isArray("COL_POROSITY"))
+				throw InvalidParameterException("Only scalar COL_POROSITY supported");
 
-	int numParType = 1;
-	if (paramProvider.exists("PAR_TYPE_VOLFRAC"))
-		numParType = paramProvider.numElements("PAR_TYPE_VOLFRAC");
+			_colPorosity = paramProvider.getDouble("COL_POROSITY");
+		}
+	}
 
 	const std::vector<std::string> bindModelNames = paramProvider.getStringArray("ADSORPTION_MODEL");
 
@@ -225,14 +223,9 @@ bool ColumnWithPoreDiffusion::configure(io::IParameterProvider& paramProvider)
 {
 	ColumnWithParticles::configure(paramProvider);
 
-	if (paramProvider.exists("NBOUND"))
-		_nBound = std::move(paramProvider.getIntArray("NBOUND"));
-	else // backwards compatibility
-	{
-		paramProvider.pushScope("discretization");
-		_nBound = std::move(paramProvider.getIntArray("NBOUND"));
-		paramProvider.popScope();
-	}
+	paramProvider.pushScope("particle_type_000");
+
+	_nBound = std::move(paramProvider.getIntArray("NBOUND"));
 
 	const int numBound = std::accumulate(_nBound.begin(), _nBound.end(), 0);
 	const int numParType = _parTypeVolFrac.size();
