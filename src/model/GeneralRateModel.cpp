@@ -69,6 +69,7 @@ void registerGeneralRateModel(std::unordered_map<std::string, std::function<Unit
 {
 	models[GeneralRateModel::identifier()] = [](int uoId) { return new GeneralRateModel(uoId); };
 	models["GRM"] = [](int uoId) { return new GeneralRateModel(uoId); };
+	models["COLUMN_MODEL_1D"] = [](int uoId) { return new GeneralRateModel(uoId); };
 }
 
 }  // namespace model

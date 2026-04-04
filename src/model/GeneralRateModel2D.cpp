@@ -227,6 +227,7 @@ void registerGeneralRateModel2D(std::unordered_map<std::string, std::function<Un
 {
 	models[GeneralRateModel2D::identifier()] = [](int uoId) { return new GeneralRateModel2D(uoId); };
 	models["GRM2D"] = [](int uoId) { return new GeneralRateModel2D(uoId); };
+	models["COLUMN_MODEL_2D"] = [](int uoId) { return new GeneralRateModel2D(uoId); };
 }
 
 }  // namespace model

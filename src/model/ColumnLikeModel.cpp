@@ -51,16 +51,14 @@ bool ColumnLikeModel::configure(io::IParameterProvider& paramProvider)
 	// Read geometry parameters
 	const std::string unitType = paramProvider.getString("UNIT_TYPE");
 
-	int numParType = paramProvider.exists("NPARTYPE") ? paramProvider.getInt("NPARTYPE") : 0;
+	int numParType = paramProvider.exists("NPARTYPE") ? paramProvider.getInt("NPARTYPE") : 1;
 
-	if (unitType == "LUMPED_RATE_MODEL_WITHOUT_PORES")
+	if (unitType == "LUMPED_RATE_MODEL_WITHOUT_PORES" || unitType == "LRM" || unitType == "DPFR")
 		_colPorosity = paramProvider.getDouble("TOTAL_POROSITY");
+	else if (unitType == "COLUMN_MODEL_1D" && numParType == 0)
+		_colPorosity = paramProvider.exists("TOTAL_POROSITY") ? paramProvider.getDouble("TOTAL_POROSITY") : 1.0;
 	else
 	{
-		if (unitType == "COLUMN_MODEL_1D")
-		{
-			if paramProvider.exists("NPARTYPE")
-		}
 		if ((unitType == "GENERAL_RATE_MODEL_2D" || unitType == "COLUMN_MODEL_2D") && paramProvider.isArray("COL_POROSITY"))
 		{
 			const std::vector<double> cp = paramProvider.getDoubleArray("COL_POROSITY");
@@ -223,7 +221,9 @@ bool ColumnWithPoreDiffusion::configure(io::IParameterProvider& paramProvider)
 {
 	ColumnWithParticles::configure(paramProvider);
 
-	paramProvider.pushScope("particle_type_000");
+	const bool hasParticleTypeScope = paramProvider.exists("particle_type_000");
+	if (hasParticleTypeScope)
+		paramProvider.pushScope("particle_type_000");
 
 	_nBound = std::move(paramProvider.getIntArray("NBOUND"));
 
@@ -292,6 +292,9 @@ bool ColumnWithPoreDiffusion::configure(io::IParameterProvider& paramProvider)
 			_temp2.push_back(W / (_parPorosity[j] + (_one - _parPorosity[j]) * _kA[j] / _kD[j]));
 		}
 	}
+
+	if (hasParticleTypeScope)
+		paramProvider.popScope();
 
 	return true;
 }
