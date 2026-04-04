@@ -140,6 +140,22 @@ void InletModel::evaluate(const mpfr::mpcomplex& s, const mpfr::mpreal& z, Eigen
 	evaluate(s, h, g);
 }
 
+mpfr::mpreal InletModel::evaluateTimeDomain(const mpfr::mpreal& t) const CASEMA_NOEXCEPT
+{
+	// Find the section that contains time t
+	for (int i = 0; i < static_cast<int>(_sectionTimes.size()) - 1; ++i)
+	{
+		if (t >= _sectionTimes[i] && t <= _sectionTimes[i + 1])
+		{
+			const mpfr::mpreal tShift = t - _sectionTimes[i];
+			return _const[i] + tShift * (_lin[i] + tShift * (_quad[i] + tShift * _cub[i]));
+		}
+	}
+
+	// Outside section range: return 0
+	return mpfr::mpreal(0);
+}
+
 bool InletModel::hasValidEstimate() const CASEMA_NOEXCEPT
 {
 	return true;

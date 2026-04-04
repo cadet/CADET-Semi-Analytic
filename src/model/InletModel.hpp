@@ -59,6 +59,15 @@ public:
 	virtual void evaluate(const mpfr::mpcomplex& s, Eigen::Ref<Eigen::MatrixCmp> h, Eigen::Ref<Eigen::VectorCmp> g) const CASEMA_NOEXCEPT;
 	virtual void evaluate(const mpfr::mpcomplex& s, const mpfr::mpreal& z, Eigen::Ref<Eigen::MatrixCmp> h, Eigen::Ref<Eigen::VectorCmp> g) const CASEMA_NOEXCEPT;
 
+	/**
+	 * @brief Evaluates the inlet profile directly in the time domain
+	 * @details Evaluates the piecewise cubic polynomial at a given time point.
+	 *          This avoids Gibbs oscillations from the numerical inverse Laplace transform.
+	 * @param [in] t Time point
+	 * @return Concentration at time t
+	 */
+	mpfr::mpreal evaluateTimeDomain(const mpfr::mpreal& t) const CASEMA_NOEXCEPT;
+
 	virtual bool hasValidEstimate() const CASEMA_NOEXCEPT;
 	virtual mpfr::mpreal estimate(const mpfr::mpreal& abscissa) const CASEMA_NOEXCEPT;
 	virtual mpfr::mpreal timeDomainUpperBound(mpfr::mpreal const* in) const CASEMA_NOEXCEPT;
