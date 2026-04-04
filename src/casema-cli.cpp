@@ -51,21 +51,92 @@
 
 struct ProgramOptions
 {
-	std::size_t laplaceSummands;
-	std::size_t hankelSummands;
-	std::size_t precision;
-	std::size_t outPrecision;
-	mpfr::mpreal abscissa;
-	mpfr::mpreal errorTrunc;
-	mpfr::mpreal errorCons;
-	mpfr::mpreal error;
-	mpfr::mpreal errorWeight;
+	std::size_t laplaceSummands = 0;
+	std::size_t hankelSummands = 0;
+	std::size_t precision = mpfr::bits2digits(mpfr::mpreal::get_default_prec());
+	std::size_t outPrecision = 0;
+	mpfr::mpreal abscissa = 0;
+	mpfr::mpreal errorTrunc = 0;
+	mpfr::mpreal errorCons = 0;
+	mpfr::mpreal error = mpfr::mpreal("1e-10");
+	mpfr::mpreal errorWeight = mpfr::mpreal("0.5");
 	std::string inFile;
 	std::string outFile;
-	int numThreads;
-	bool kahan;
-	bool ignoreCSTR;
+	int numThreads = -1;
+	bool kahan = false;
+	bool ignoreCSTR = false;
 };
+
+
+#ifdef ENABLE_HDF5
+/**
+ * @brief Reads program options from an HDF5 input file if the group /input/program_options exists.
+ * @detail Values read from the file serve as defaults that can be overridden by command-line arguments.
+ */
+void readProgramOptionsFromH5(const std::string& fileName, ProgramOptions& opts)
+{
+	const std::unique_ptr<casema::io::IFileReader> rd(casema::io::createReader("h5"));
+	if (!rd)
+		return;
+
+	try
+	{
+		rd->openFile(fileName, "r");
+	}
+	catch (const std::exception&)
+	{
+		return;
+	}
+
+	rd->pushGroup("input");
+
+	if (!rd->exists("program_options"))
+	{
+		rd->closeFile();
+		return;
+	}
+
+	rd->pushGroup("program_options");
+
+	if (rd->exists("PRECISION"))
+		opts.precision = std::stoul(rd->getString("PRECISION"));
+
+	if (rd->exists("OUTPUT_PRECISION"))
+		opts.outPrecision = std::stoul(rd->getString("OUTPUT_PRECISION"));
+
+	if (rd->exists("ABSCISSA"))
+		opts.abscissa = mpfr::mpreal(rd->getString("ABSCISSA"));
+
+	if (rd->exists("ERROR"))
+		opts.error = mpfr::mpreal(rd->getString("ERROR"));
+
+	if (rd->exists("ERROR_WEIGHT"))
+		opts.errorWeight = mpfr::mpreal(rd->getString("ERROR_WEIGHT"));
+
+	if (rd->exists("MAX_LAPLACE_SUMMANDS"))
+		opts.laplaceSummands = static_cast<std::size_t>(rd->getInt("MAX_LAPLACE_SUMMANDS"));
+
+	if (rd->exists("MAX_HANKEL_SUMMANDS"))
+		opts.hankelSummands = static_cast<std::size_t>(rd->getInt("MAX_HANKEL_SUMMANDS"));
+
+	if (rd->exists("KAHAN_SUMMATION"))
+		opts.kahan = rd->getBool("KAHAN_SUMMATION");
+
+	if (rd->exists("IGNORE_CSTR"))
+		opts.ignoreCSTR = rd->getBool("IGNORE_CSTR");
+
+	if (rd->exists("THREADS"))
+		opts.numThreads = rd->getInt("THREADS");
+
+	if (rd->exists("OUTPUT_FILE"))
+		opts.outFile = rd->getString("OUTPUT_FILE");
+
+	rd->popGroup(); // program_options
+	rd->popGroup(); // input
+
+	rd->closeFile();
+}
+#endif
 
 class ProgressBarUpdater
 {
@@ -400,24 +471,66 @@ int main(int argc, char** argv)
 		TCLAP::CmdLine cmd("Uses a numerical inverse Laplace transform to solve GRM models", ' ', casema::getVersion());
 		cmd.setOutput(&customOut);
 
-		cmd >> (new TCLAP::ValueArg<int>("t", "threads", "Number of threads (default: all available)", false, -1, "Int"))->storeIn(&opts.numThreads);
+		auto* threadsArg = new TCLAP::ValueArg<int>("t", "threads", "Number of threads (default: all available)", false, -1, "Int");
+		auto* outPrecArg = new TCLAP::ValueArg<std::size_t>("P", "outprec", "Output precision (default: same as working precision)", false, 0, "Int");
+		auto* precArg = new TCLAP::ValueArg<std::size_t>("p", "prec", "Working precision in base 10 digits (default: " + std::to_string(mpfr::bits2digits(mpfr::mpreal::get_default_prec())) + ", stay below " + std::to_string(mpfr::bits2digits(MPFR_PREC_MAX)) + ")",
+													false, mpfr::bits2digits(mpfr::mpreal::get_default_prec()), "Int");
+		auto* abscissaArg = new TCLAP::ValueArg<mpfr::mpreal>("a", "abscissa", "Abscissa in Durbin's method, used as safety margin if error (-e) is given", false, 0, "Float");
+		auto* errorArg = new TCLAP::ValueArg<mpfr::mpreal>("e", "error", "Error threshold (default: 1e-10)", false, 1e-10, "Float");
+		auto* weightArg = new TCLAP::ValueArg<mpfr::mpreal>("w", "weight", "Weight used to distribute error onto consistency and truncation (default: 0.5)", false, 0.5, "Float");
+		auto* lapSumArg = new TCLAP::ValueArg<std::size_t>("N", "lapsum", "Maximum number of (Laplace) summands in Durbin's method (Laplace inversion)", false, 0, "Int");
+		auto* hankelSumArg = new TCLAP::ValueArg<std::size_t>("n", "hankelsum", "Number of (Hankel) summands in Dini's expansion (Hankel inversion)", false, 0, "Int");
+		auto* kahanArg = new TCLAP::SwitchArg("", "kahan", "Use Kahan summation");
+		auto* ignoreCstrArg = new TCLAP::SwitchArg("", "ignorecstr", "Ignore CSTRs in error estimates");
+		auto* outArg = new TCLAP::ValueArg<std::string>("o", "out", "Write full precision output to file (default: disabled)", false, std::string(), "File");
+		auto* modelArg = new TCLAP::UnlabeledValueArg<std::string>("model", "Model file (HDF5 or XML)", true, "", "File");
 
-		cmd >> (new TCLAP::ValueArg<std::size_t>("P", "outprec", "Output precision (default: same as working precision)", false, 0, "Int"))->storeIn(&opts.outPrecision);
-		cmd >> (new TCLAP::ValueArg<std::size_t>("p", "prec", "Working precision in base 10 digits (default: " + std::to_string(mpfr::bits2digits(mpfr::mpreal::get_default_prec())) + ", stay below " + std::to_string(mpfr::bits2digits(MPFR_PREC_MAX)) + ")", 
-													false, mpfr::bits2digits(mpfr::mpreal::get_default_prec()), "Int"))->storeIn(&opts.precision);
-
-		cmd >> (new TCLAP::ValueArg<mpfr::mpreal>("a", "abscissa", "Abscissa in Durbin's method, used as safety margin if error (-e) is given", false, 0, "Float"))->storeIn(&opts.abscissa);
-		cmd >> (new TCLAP::ValueArg<mpfr::mpreal>("e", "error", "Error threshold (default: 1e-10)", false, 1e-10, "Float"))->storeIn(&opts.error);
-		cmd >> (new TCLAP::ValueArg<mpfr::mpreal>("w", "weight", "Weight used to distribute error onto consistency and truncation (default: 0.5)", false, 0.5, "Float"))->storeIn(&opts.errorWeight);
-		cmd >> (new TCLAP::ValueArg<std::size_t>("N", "lapsum", "Maximum number of (Laplace) summands in Durbin's method (Laplace inversion)", false, 0, "Int"))->storeIn(&opts.laplaceSummands);
-		cmd >> (new TCLAP::ValueArg<std::size_t>("n", "hankelsum", "Number of (Hankel) summands in Dini's expansion (Hankel inversion)", false, 0, "Int"))->storeIn(&opts.hankelSummands);
-		cmd >> (new TCLAP::SwitchArg("", "kahan", "Use Kahan summation"))->storeIn(&opts.kahan);
-		cmd >> (new TCLAP::SwitchArg("", "ignorecstr", "Ignore CSTRs in error estimates"))->storeIn(&opts.ignoreCSTR);
-
-		cmd >> (new TCLAP::ValueArg<std::string>("o", "out", "Write full precision output to file (default: disabled)", false, std::string(), "File"))->storeIn(&opts.outFile);
-		cmd >> (new TCLAP::UnlabeledValueArg<std::string>("model", "Model file (HDF5 or XML)", true, "", "File"))->storeIn(&opts.inFile);
+		cmd >> threadsArg;
+		cmd >> outPrecArg;
+		cmd >> precArg;
+		cmd >> abscissaArg;
+		cmd >> errorArg;
+		cmd >> weightArg;
+		cmd >> lapSumArg;
+		cmd >> hankelSumArg;
+		cmd >> kahanArg;
+		cmd >> ignoreCstrArg;
+		cmd >> outArg;
+		cmd >> modelArg;
 
 		cmd.parse( argc, argv );
+
+		// Always read the input file path from command line
+		opts.inFile = modelArg->getValue();
+
+#ifdef ENABLE_HDF5
+		// Read defaults from the HDF5 file's input/program_options group (if it exists)
+		{
+			const std::size_t dotPos = opts.inFile.find_last_of('.');
+			if (dotPos != std::string::npos && dotPos != 0)
+			{
+				std::string fileExt = opts.inFile.substr(dotPos + 1);
+				std::transform(fileExt.begin(), fileExt.end(), fileExt.begin(), ::tolower);
+				if (fileExt == "h5")
+					readProgramOptionsFromH5(opts.inFile, opts);
+			}
+		}
+#endif
+
+		// Command-line arguments override H5 defaults when explicitly set
+		if (threadsArg->isSet())   opts.numThreads = threadsArg->getValue();
+		else if (opts.numThreads == 0) opts.numThreads = -1;
+
+		if (outPrecArg->isSet())   opts.outPrecision = outPrecArg->getValue();
+		if (precArg->isSet())      opts.precision = precArg->getValue();
+		if (abscissaArg->isSet())  opts.abscissa = abscissaArg->getValue();
+		if (errorArg->isSet())     opts.error = errorArg->getValue();
+		if (weightArg->isSet())    opts.errorWeight = weightArg->getValue();
+		if (lapSumArg->isSet())    opts.laplaceSummands = lapSumArg->getValue();
+		if (hankelSumArg->isSet()) opts.hankelSummands = hankelSumArg->getValue();
+		if (kahanArg->isSet())     opts.kahan = kahanArg->getValue();
+		if (ignoreCstrArg->isSet()) opts.ignoreCSTR = ignoreCstrArg->getValue();
+		if (outArg->isSet())       opts.outFile = outArg->getValue();
 	}
 	catch (const TCLAP::ArgException &e)
 	{
