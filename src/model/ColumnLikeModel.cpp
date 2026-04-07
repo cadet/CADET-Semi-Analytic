@@ -240,18 +240,21 @@ bool ColumnWithPoreDiffusion::configure(io::IParameterProvider& paramProvider)
 	else
 		_parCoreRadius = std::move(std::vector<mpfr::mpreal>(numParType, 0.0));
 
-	const std::vector<double> parDiffusion = paramProvider.getDoubleArray("PAR_DIFFUSION");
+	const std::string parDiffName = paramProvider.exists("PORE_DIFFUSION") ? "PORE_DIFFUSION" : "PAR_DIFFUSION";
+	const std::vector<double> parDiffusion = paramProvider.getDoubleArray(parDiffName);
 	if ((parDiffusion.size() != 1) && (parDiffusion.size() != numParType))
-		throw InvalidParameterException("Field PAR_DIFFUSION has to have 1 or " + std::to_string(numParType) + " elements");
+		throw InvalidParameterException("Field " + parDiffName + " has to have 1 or " + std::to_string(numParType) + " elements");
 	_parDiffusion = std::move(toMPreal(parDiffusion, numParType));
 
 	std::vector<double> parSurfDiffusion;
-	if (paramProvider.exists("PAR_SURFDIFFUSION"))
+	if (paramProvider.exists("SURFACE_DIFFUSION"))
+		parSurfDiffusion = paramProvider.getDoubleArray("SURFACE_DIFFUSION");
+	else if (paramProvider.exists("PAR_SURFDIFFUSION"))
 		parSurfDiffusion = paramProvider.getDoubleArray("PAR_SURFDIFFUSION");
 	else
 		parSurfDiffusion = { 0.0 };
 	if ((parSurfDiffusion.size() != 1) && (parSurfDiffusion.size() != numBound))
-		throw InvalidParameterException("Field PAR_SURFDIFFUSION has to have 1 or " + std::to_string(numBound) + " elements");
+		throw InvalidParameterException("Field SURFACE_DIFFUSION/PAR_SURFDIFFUSION has to have 1 or " + std::to_string(numBound) + " elements");
 	_parSurfDiffusion = std::move(toMPreal(parSurfDiffusion, numBound));
 
 	if (numBound != numParType)
