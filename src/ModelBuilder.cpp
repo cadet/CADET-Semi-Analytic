@@ -35,6 +35,10 @@ namespace casema
 		void registerCSTRModel(std::unordered_map<std::string, std::function<UnitOperation*(int)>>& models);
 		void registerGeneralRateModel2D(std::unordered_map<std::string, std::function<UnitOperation*(int)>>& models);
 
+		void registerRadialLumpedRateModelWithoutPores(std::unordered_map<std::string, std::function<UnitOperation*(int)>>& models);
+		void registerRadialLumpedRateModelWithPores(std::unordered_map<std::string, std::function<UnitOperation*(int)>>& models);
+		void registerRadialGeneralRateModel(std::unordered_map<std::string, std::function<UnitOperation*(int)>>& models);
+
 	} // namespace model
 
 	ModelBuilder::ModelBuilder()
@@ -47,6 +51,9 @@ namespace casema
 		model::registerLumpedRateModelWithoutPores(_modelCreators);
 		model::registerCSTRModel(_modelCreators);
 		model::registerGeneralRateModel2D(_modelCreators);
+		model::registerRadialLumpedRateModelWithoutPores(_modelCreators);
+		model::registerRadialLumpedRateModelWithPores(_modelCreators);
+		model::registerRadialGeneralRateModel(_modelCreators);
 	}
 
 	ModelBuilder::~ModelBuilder() CASEMA_NOEXCEPT

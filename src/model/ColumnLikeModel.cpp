@@ -52,7 +52,8 @@ bool ColumnLikeModel::configure(io::IParameterProvider& paramProvider)
 	const std::string unitType = paramProvider.getString("UNIT_TYPE");
 	if (unitType != "DPFR")
 	{
-		if ((unitType != "LUMPED_RATE_MODEL_WITHOUT_PORES") && (unitType != "LRM"))
+		if ((unitType != "LUMPED_RATE_MODEL_WITHOUT_PORES") && (unitType != "LRM")
+			&& (unitType != "RADIAL_LUMPED_RATE_MODEL_WITHOUT_PORES") && (unitType != "rLRM"))
 		{
 			if ((unitType == "GENERAL_RATE_MODEL_2D") && paramProvider.isArray("COL_POROSITY"))
 			{

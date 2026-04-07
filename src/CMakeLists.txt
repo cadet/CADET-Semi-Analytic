@@ -96,6 +96,9 @@ add_library(casema_common OBJECT "${CMAKE_CURRENT_BINARY_DIR}/VersionInfo.cpp"
 	model/LumpedRateModelWithPores.cpp
 	model/GeneralRateModel.cpp
 	model/GeneralRateModel2D.cpp
+	model/RadialLumpedRateModelWithoutPores.cpp
+	model/RadialLumpedRateModelWithPores.cpp
+	model/RadialGeneralRateModel.cpp
 	model/StirredTankModel.cpp
 	model/InletModel.cpp
 	model/OutletModel.cpp
