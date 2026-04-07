@@ -47,6 +47,8 @@
 #include "ModelBuilder.hpp"
 #include "model/ModelSystem.hpp"
 #include "model/UnitOperation.hpp"
+#include "model/InletModel.hpp"
+#include "model/OutletModel.hpp"
 
 
 struct ProgramOptions
@@ -601,9 +603,32 @@ int main(int argc, char** argv)
 
 	const auto start = std::chrono::high_resolution_clock::now();
 
-	const casema::util::SlicedVector<mpfr::mpreal> output = invert(*sys, maxTime, st.solutionTimes, timeOffset, opts);
+	casema::util::SlicedVector<mpfr::mpreal> output = invert(*sys, maxTime, st.solutionTimes, timeOffset, opts);
 
 	const double time_sim = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - start).count();
+
+	// Overwrite inlet unit outputs with direct time-domain evaluation.
+	// The inverse Laplace transform of discontinuous piecewise polynomials
+	// causes Gibbs-like oscillations, so we evaluate the inlet profile directly.
+	{
+		int outletIdx = 0;
+		for (int j = 0; j < sys->numModels(); ++j)
+		{
+			const casema::model::UnitOperation* const uo = sys->unitOperation(j);
+			const int nPorts = std::max(1, uo->numOutletPorts());
+
+			if (const casema::model::InletModel* inlet = dynamic_cast<const casema::model::InletModel*>(uo))
+			{
+				for (int k = 0; k < nPorts; ++k)
+				{
+					for (std::size_t i = 0; i < st.solutionTimes.size() - timeOffset; ++i)
+						output(outletIdx + k, i) = inlet->evaluateTimeDomain(st.solutionTimes[i + timeOffset]);
+				}
+			}
+
+			outletIdx += nPorts * uo->numComponents();
+		}
+	}
 
 	std::cout << "Writing output" << std::endl;
 
