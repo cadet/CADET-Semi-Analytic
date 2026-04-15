@@ -76,10 +76,10 @@ bool GeneralRateModel2D::configure(io::IParameterProvider& paramProvider)
 	}
 	else if (rdt == "USER_DEFINED")
 	{
-		const std::vector<double> radEdges = paramProvider.getDoubleArray("RADIAL_COMPARTMENTS");
+		const std::vector<double> radEdges = paramProvider.getDoubleArray("RADIAL_DISC_VECTOR");
 
 		if (radEdges.size() < nRad + 1)
-			throw InvalidParameterException("Number of elements in field RADIAL_COMPARTMENTS is less than NRAD + 1 (" + std::to_string(nRad + 1) + ")");
+			throw InvalidParameterException("Number of elements in field RADIAL_DISC_VECTOR is less than NRAD + 1 (" + std::to_string(nRad + 1) + ")");
 
 		_radialEdges = std::move(toMPreal(radEdges));
 	}
