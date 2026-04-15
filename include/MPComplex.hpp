@@ -16,6 +16,7 @@
 #ifndef CASEMA_MPCOMPLEX_HPP_
 #define CASEMA_MPCOMPLEX_HPP_
 
+#include <cstdint>
 #include <string>
 #include <ostream>
 
