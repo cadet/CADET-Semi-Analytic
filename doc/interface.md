@@ -46,17 +46,23 @@ Instead, the following program options can be provided to control numerical meth
 
 - `-model <file>` (model input file required)
   - Path to the input model file. Accepted file formats are `.h5` (HDF5) and `.xml`, both have to follow the CADET input format.
+- `-m <file>` (model input file required)
+  - Path to the input model file. Accepted file formats are `.h5` (HDF5) and `.xml`, both must follow the CADET input format.
 
 - `-o <file>` (solution output file optional)
+- `-o <file>` (solution output file, optional)
   - Path to the output file. Supported formats are `.csv` and `.h5`.
   - For `.h5`: program options are saved as meta data. Loss of arbitrary precision output: Numeric values are written as doubles. Working precision is not affected.
   - For `.csv`: arbitrary precision solution, the number formatting uses the `-P` option;
   - Optional for `.h5` inputs (in that case CASEMA will default the output to the input filename). For `.xml` inputs specify an output path explicitly if you want a `.h5` or `.csv` result.
+  - HDF5 (`.h5`) behaviour: numeric solution arrays are written as IEEE `double` (64-bit). CASEMA writes meta data, including the program options into the file.
+  - CSV (`.csv`) behaviour: arbitrary precision solution, number formatting is based on the `-P` option;
+  - Optional for `.h5` inputs (in that case CASEMA will default the output to the input filename). For `.xml` inputs specify an output path explicitly if you want a `.h5` or `.csv` result.
 
 - `-e <threshold>` (error threshold, default: `1e-10`)
-  - Description: Relative error threshold used by CASEMA's adaptive inversion/error-estimation framework. The solver guarantees that the numerical error (consistency + truncation) does not exceed this value.
-  - A smaller `-e` requests a more accurate solution. To meet a smaller threshold CASEMA will generally increase the number of inversion summands and internal precision, which increases runtime and memory usage.
-  - Some settings do not support error estimation (see "Notes on Error Estimation" below). Here, `-e` will raise an exception and you must use `-a` and `-n` instead.
+  - Relative error threshold used by CASEMA's adaptive inversion/error-estimation framework. The solver guarantees that the numerical error (consistency + Laplace truncation) does not exceed this value.
+  - A smaller `-e` requests a more accurate solution. To meet a smaller threshold CASEMA will generally increase the number of Laplace summands and may increase internal precision, which increases runtime and memory usage.
+  - See "Notes on Error Estimation" for exclusions and further information.
 
 - `-w <weight>` (consistency / truncation weight, default: `0.5`)
   - A weight in `[0,1]` that distributes the allowable error between consistency error (numerical discretization/rounding) and truncation error (series/inversion truncation). `0` assigns all budget to truncation error, `1` to consistency error.
@@ -79,13 +85,13 @@ Instead, the following program options can be provided to control numerical meth
   - Directly controls truncation error in Hankel expansions: larger `-n` reduces truncation error and produces a more accurate radial transform at the cost of more computation.
 
 - `-p <digits>` (working precision in decimal digits)
-  - Sets the arithmetic precision used internally (number of decimal digits) when an arbitrary-precision backend is available.
+  - Sets the arithmetic precision used internally (number of decimal digits) when an arbitrary-precision backend is available (MPFR). If unset, CASEMA uses the current MPFR default precision (visible in the CLI as the default `-p`).
   - Effect on solution: Higher working precision reduces round-off error in ill-conditioned transforms (many summands, very small `-e`) and can be necessary to attain extreme tolerances. Increasing `-p` can dramatically increase runtime and memory usage.
   - Only set when instability is observed or if its impossible to reach `-e` with double precision.
   - Optional, CASEMA uses standard IEEE double precision by default.
 
 - `-P <digits>` (output precision)
-  - Number of decimal digits written to text output (CSV), enabling arbitrary precesion output.
+  - Number of decimal digits written to text output (CSV). If `-P` is zero/unspecified the program uses the working precision `-p` as the default for text formatting. `-P` does not affect binary HDF5 storage (HDF5 arrays are doubles).
 
 - `-t <threads>` (number of threads)
   - Maximum number of worker threads CASEMA should use for parallel parts of the computation.
