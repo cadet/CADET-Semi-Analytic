@@ -17,6 +17,10 @@
 #include "io/ParameterProvider.hpp"
 #include "Exceptions.hpp"
 
+#include <iomanip>
+#include <sstream>
+#include <iostream>
+
 namespace casema
 {
 
@@ -31,9 +35,8 @@ std::string getUnitName(io::IParameterProvider& paramProvider)
 	{
 		const int nParType = paramProvider.getInt("NPARTYPE");
 
-		if (nParType < 0 || nParType > 1)
-			throw InvalidParameterException("CASEMA does not support column model with NPARTYPE=" + std::to_string(nParType));
-
+		if (nParType < 0)
+			throw InvalidParameterException("Field NPARTYPE must be >= 0");
 
 		if (nParType == 0)
 		{
@@ -44,41 +47,66 @@ std::string getUnitName(io::IParameterProvider& paramProvider)
 		}
 		else
 		{
-			paramProvider.pushScope("particle_type_000");
-
-			bool hasFilmDiff = paramProvider.getBool("HAS_FILM_DIFFUSION");
-			bool hasPoreDiff = false;
-			bool hasSurfDiff = false;
-			
-			if(hasFilmDiff)
+			for(int type = 0; type < nParType; type++)
 			{
-				hasPoreDiff = paramProvider.getBool("HAS_PORE_DIFFUSION");
-				hasSurfDiff = paramProvider.exists("HAS_SURFACE_DIFFUSION") ? paramProvider.getBool("HAS_SURFACE_DIFFUSION") : false;
-			}
+				std::ostringstream oss;
+				oss << "particle_type_"  << std::setw(3) << std::setfill('0') << type;
 
-			if (uoType == "COLUMN_MODEL_1D")
-			{
-				if(!hasFilmDiff)
-					uoType = "LUMPED_RATE_MODEL_WITHOUT_PORES";
+				paramProvider.pushScope(oss.str());
+
+				bool hasFilmDiff = paramProvider.getBool("HAS_FILM_DIFFUSION");
+				bool hasPoreDiff = false;
+				bool hasSurfDiff = false;
+				
+				if(hasFilmDiff)
+				{
+					hasPoreDiff = paramProvider.getBool("HAS_PORE_DIFFUSION");
+					hasSurfDiff = paramProvider.exists("HAS_SURFACE_DIFFUSION") ? paramProvider.getBool("HAS_SURFACE_DIFFUSION") : false;
+				}
+				else if (nParType > 1)
+				{
+					throw InvalidParameterException("Multiple particle types are not supported for transport model without pores (HAS_FILM_DIFFUSION=False)");
+				}
+
+				if (uoType == "COLUMN_MODEL_1D")
+				{
+					if(!hasFilmDiff)
+					{
+						if (type > 0 && uoType != "LUMPED_RATE_MODEL_WITHOUT_PORES")
+							throw InvalidParameterException("Only particles of same type are supported for NPARTYPE > 1. Double check fields HAS_FILM_DIFFUSION, HAS_PORE_DIFFUSION, HAS_SURFACE_DIFFUSION.");
+
+						uoType = "LUMPED_RATE_MODEL_WITHOUT_PORES";
+					}
+					else
+					{
+						if (!hasPoreDiff && !hasSurfDiff)
+						{
+							if (type > 0 && uoType != "LUMPED_RATE_MODEL_WITH_PORES")
+								throw InvalidParameterException("Only particles of same type are supported for NPARTYPE > 1. Double check fields HAS_FILM_DIFFUSION, HAS_PORE_DIFFUSION, HAS_SURFACE_DIFFUSION.");
+
+							uoType = "LUMPED_RATE_MODEL_WITH_PORES";
+						}
+						else
+						{
+						if (type > 0 && uoType != "GENERAL_RATE_MODEL")
+							throw InvalidParameterException("Only particles of same type are supported for NPARTYPE > 1. Double check fields HAS_FILM_DIFFUSION, HAS_PORE_DIFFUSION, HAS_SURFACE_DIFFUSION.");
+
+							uoType = "GENERAL_RATE_MODEL";
+						}
+					}
+				}
 				else
 				{
-					if (!hasPoreDiff && !hasSurfDiff)
-						uoType = "LUMPED_RATE_MODEL_WITH_PORES";
+					if(!hasFilmDiff)
+						throw InvalidParameterException("CASEMA does not support a 2D bulk transport model without pores (2DLRM). Mimic this by setting film diffusion coefficients to a large value");
+					else if (!hasPoreDiff && !hasSurfDiff)
+						throw InvalidParameterException("CASEMA does not support a 2D bulk transport model with particles without pore diffusion (2DLRMP). Only 2D GRM is supported");
 					else
-						uoType = "GENERAL_RATE_MODEL";
+						uoType = "GENERAL_RATE_MODEL_2D";
 				}
-			}
-			else
-			{
-				if(!hasFilmDiff)
-					throw InvalidParameterException("CASEMA does not support a 2D bulk transport model without pores (2DLRM). Mimic this by setting film diffusion coefficients to a large value");
-				else if (!hasPoreDiff && !hasSurfDiff)
-					throw InvalidParameterException("CASEMA does not support a 2D bulk transport model with particles without pore diffusion (2DLRMP). Only 2D GRM is supported");
-				else
-					uoType = "GENERAL_RATE_MODEL_2D";
-			}
 
-			paramProvider.popScope();
+				paramProvider.popScope(); // particle type group
+			}
 		}
 	}
 
