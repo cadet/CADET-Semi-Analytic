@@ -115,10 +115,10 @@ namespace
 					"LIN_KA": [35.5],
 					"LIN_KD": [1000.0]
 				},
-				discretization:
+				"discretization":
 				{
 				"NPAR": 4,
-				"PAR_DISC_TYPE": "EQUIDISTANT_PAR",
+				"PAR_DISC_TYPE": "EQUIDISTANT_PAR"
 				}
 			},
 			"discretization":
