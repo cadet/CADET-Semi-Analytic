@@ -36,28 +36,36 @@ namespace
 			"NCOMP": 1,
 			"VELOCITY": 5.75e-4,
 			"COL_DISPERSION": 5.75e-8,
-			"FILM_DIFFUSION": [6.9e-6],
-			"PAR_DIFFUSION": [6.07e-11],
-			"PAR_SURFDIFFUSION": [0.0],
 			"COL_LENGTH": 0.014,
-			"PAR_RADIUS": 4.5e-5,
 			"COL_POROSITY": 0.37,
-			"PAR_POROSITY": 0.75,
 			"INIT_C": [0.0],
-			"INIT_Q": [0.0],
-			"NBOUND": [1],
-			"ADSORPTION_MODEL": "LINEAR",
-			"adsorption":
+			"NPARTYPE": 1,
+			"particle_type_000":
 			{
-				"IS_KINETIC": 0,
-				"LIN_KA": [35.5],
-				"LIN_KD": [1000.0]
+				"FILM_DIFFUSION": [6.9e-6],
+				"PORE_DIFFUSION": [6.07e-11],
+				"SURFACE_DIFFUSION": [0.0],
+				"PAR_RADIUS": 4.5e-5,
+				"PAR_POROSITY": 0.75,
+				"INIT_CP": [0.0],
+				"INIT_CS": [0.0],
+				"NBOUND": [1],
+				"ADSORPTION_MODEL": "LINEAR",
+				"adsorption":
+				{
+					"IS_KINETIC": 0,
+					"LIN_KA": [35.5],
+					"LIN_KD": [1000.0]
+				},
+				"discretization":
+				{
+					"NPAR": 4,
+					"PAR_DISC_TYPE": "EQUIDISTANT_PAR"
+				}
 			},
 			"discretization":
 			{
 				"NCOL": 16,
-				"NPAR": 4,
-				"PAR_DISC_TYPE": "EQUIDISTANT_PAR",
 				"USE_ANALYTIC_JACOBIAN": true,
 				"MAX_KRYLOV": 0,
 				"GS_TYPE": 1,
@@ -73,7 +81,7 @@ namespace
 			})json");
 		j["COL_DISPERSION"] = colDispersion;
 		j["COL_LENGTH"] = colLength;
-		j["adsorption"]["LIN_KA"] = std::vector<double>{kA};
+		j["particle_type_000"]["adsorption"]["LIN_KA"] = std::vector<double>{kA};
 		return j;
 	}
 
@@ -83,34 +91,42 @@ namespace
 			"UNIT_TYPE": "GENERAL_RATE_MODEL_2D",
 			"NCOMP": 1,
 			"VELOCITY": 5.75e-4,
-			"COL_DISPERSION": 5.75e-8,
+			"COL_DISPERSION_AXIAL": 5.75e-8,
 			"COL_DISPERSION_RADIAL": 5e-8,
-			"FILM_DIFFUSION": [6.9e-6],
-			"PAR_DIFFUSION": [6.07e-11],
-			"PAR_SURFDIFFUSION": [0.0],
 			"COL_LENGTH": 0.014,
 			"COL_RADIUS": 0.03,
-			"PAR_RADIUS": 4.5e-5,
 			"COL_POROSITY": 0.37,
-			"PAR_POROSITY": 0.75,
 			"INIT_C": [0.0],
-			"INIT_Q": [0.0],
-			"NBOUND": [1],
-			"ADSORPTION_MODEL": "LINEAR",
-			"adsorption":
+			"NPARTYPE": 1,
+			"particle_type_000":
 			{
-				"IS_KINETIC": 0,
-				"LIN_KA": [35.5],
-				"LIN_KD": [1000.0]
+				"FILM_DIFFUSION": [6.9e-6],
+				"PORE_DIFFUSION": [6.07e-11],
+				"SURFACE_DIFFUSION": [0.0],
+				"PAR_RADIUS": 4.5e-5,
+				"PAR_POROSITY": 0.75,
+				"INIT_CP": [0.0],
+				"INIT_CS": [0.0],
+				"NBOUND": [1],
+				"ADSORPTION_MODEL": "LINEAR",
+				"adsorption":
+				{
+					"IS_KINETIC": 0,
+					"LIN_KA": [35.5],
+					"LIN_KD": [1000.0]
+				},
+				"discretization":
+				{
+				"NPAR": 4,
+				"PAR_DISC_TYPE": "EQUIDISTANT_PAR"
+				}
 			},
 			"discretization":
 			{
 				"NCOL": 16,
-				"NPAR": 4,
 				"NRAD": 1,
 				"RADIAL_COMPARTMENTS": [],
 				"RADIAL_DISC_TYPE": "EQUIDISTANT",
-				"PAR_DISC_TYPE": "EQUIDISTANT_PAR",
 				"USE_ANALYTIC_JACOBIAN": true,
 				"MAX_KRYLOV": 0,
 				"GS_TYPE": 1,
@@ -124,10 +140,10 @@ namespace
 				}
 			}
 			})json");
-		j["COL_DISPERSION"] = colDispersion;
+		j["COL_DISPERSION_AXIAL"] = colDispersion;
 		j["COL_LENGTH"] = colLength;
 		j["COL_RADIUS"] = radius;
-		j["adsorption"]["LIN_KA"] = std::vector<double>{kA};
+		j["particle_type_000"]["adsorption"]["LIN_KA"] = std::vector<double>{kA};
 		return j;
 	}
 }

@@ -143,11 +143,15 @@ namespace casema
 
 	model::UnitOperation* ModelBuilder::createUnitOperation(io::IParameterProvider& paramProvider, int uoId)
 	{
-		const std::string uoType = paramProvider.getString("UNIT_TYPE");
+		// create legacy names for new unit operation types if supported
+		const std::string uoType = casema::model::getUnitName(paramProvider);
+
 		const auto it = _modelCreators.find(uoType);
+
 		if (it == _modelCreators.end())
 		{
 			// Model was not found
+			throw InvalidParameterException(uoType + "not supported");
 			return nullptr;
 		}
 

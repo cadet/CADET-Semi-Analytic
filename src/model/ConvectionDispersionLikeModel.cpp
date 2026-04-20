@@ -95,6 +95,10 @@ bool ConvectionDispersionLikeModel::configure(io::IParameterProvider& paramProvi
 		
 		_colDispersion = paramProvider.getDouble("COL_DISPERSION");
 	}
+	else if (paramProvider.exists("COL_DISPERSION_AXIAL"))
+	{
+		_colDispersion = paramProvider.getDouble("COL_DISPERSION_AXIAL");
+	}
 	else
 		throw InvalidParameterException("Parameter COL_DISPERSION is required");
 

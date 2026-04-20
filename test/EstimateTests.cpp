@@ -32,22 +32,27 @@ namespace
 			"NCOMP": 1,
 			"VELOCITY": 5.75e-4,
 			"COL_DISPERSION": 5.75e-8,
-			"FILM_DIFFUSION": [6.9e-6],
-			"PAR_DIFFUSION": [6.07e-11],
-			"PAR_SURFDIFFUSION": [0.0],
 			"COL_LENGTH": 0.014,
-			"PAR_RADIUS": 4.5e-5,
 			"COL_POROSITY": 0.37,
-			"PAR_POROSITY": 0.75,
 			"INIT_C": [0.0],
-			"INIT_Q": [0.0],
-			"NBOUND": [1],
-			"ADSORPTION_MODEL": "LINEAR",
-			"adsorption":
+			"NPARTYPE": 1,
+			"particle_type_000":
 			{
-				"IS_KINETIC": 0,
-				"LIN_KA": [35.5],
-				"LIN_KD": [1000.0]
+				"FILM_DIFFUSION": [6.9e-6],
+				"PORE_DIFFUSION": [6.07e-11],
+				"SURFACE_DIFFUSION": [0.0],
+				"PAR_RADIUS": 4.5e-5,
+				"PAR_POROSITY": 0.75,
+				"INIT_CP": [0.0],
+				"INIT_CS": [0.0],
+				"NBOUND": [1],
+				"ADSORPTION_MODEL": "LINEAR",
+				"adsorption":
+				{
+					"IS_KINETIC": 0,
+					"LIN_KA": [35.5],
+					"LIN_KD": [1000.0]
+				}
 			},
 			"discretization":
 			{

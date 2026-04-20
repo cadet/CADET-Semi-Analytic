@@ -20,6 +20,8 @@
 #include "Exceptions.hpp"
 
 #include <numeric>
+#include <sstream>
+#include <iostream>
 
 namespace casema
 {
@@ -49,7 +51,8 @@ bool ColumnLikeModel::configure(io::IParameterProvider& paramProvider)
 	ConvectionDispersionLikeModel::configure(paramProvider);
 
 	// Read geometry parameters
-	const std::string unitType = paramProvider.getString("UNIT_TYPE");
+	const std::string unitType = casema::model::getUnitName(paramProvider);
+
 	if (unitType != "DPFR")
 	{
 		if ((unitType != "LUMPED_RATE_MODEL_WITHOUT_PORES") && (unitType != "LRM"))
@@ -79,24 +82,24 @@ bool ColumnLikeModel::configure(io::IParameterProvider& paramProvider)
 	else
 		_colPorosity = 1.0;
 
-	int numParType = 1;
-	if (paramProvider.exists("PAR_TYPE_VOLFRAC"))
-		numParType = paramProvider.numElements("PAR_TYPE_VOLFRAC");
+	int nParType = paramProvider.getInt("NPARTYPE");
 
-	const std::vector<std::string> bindModelNames = paramProvider.getStringArray("ADSORPTION_MODEL");
+	_kA.reserve(nParType);
+	_kD.reserve(nParType);
+	_isKinetic.reserve(nParType);
 
-	if ((bindModelNames.size() != 1) && (bindModelNames.size() != numParType))
-		throw InvalidParameterException("Field ADSORPTION_MODEL contains too few elements (" + std::to_string(numParType) + " required)");
-
-	_kA.reserve(numParType);
-	_kD.reserve(numParType);
-	_isKinetic.reserve(numParType);
-
-	for (int i = 0; i < numParType; ++i)
+	for(int type = 0; type < nParType; type++)
 	{
-		if (bindModelNames[i] == "LINEAR")
+		std::ostringstream oss;
+		oss << "particle_type_"  << std::setw(3) << std::setfill('0') << type;
+
+		paramProvider.pushScope(oss.str());
+
+		std::string bindModelName = paramProvider.getString("ADSORPTION_MODEL");
+
+		if (bindModelName == "LINEAR")
 		{
-			MultiplexedScopeSelector scopeGuard(paramProvider, "adsorption", numParType == 1, i, true, true);
+			paramProvider.pushScope("adsorption");
 
 			if (paramProvider.numElements("LIN_KA") != 1)
 				throw InvalidParameterException("Field LIN_KA must be scalar");
@@ -108,15 +111,19 @@ bool ColumnLikeModel::configure(io::IParameterProvider& paramProvider)
 			_kA.push_back(paramProvider.getDouble("LIN_KA"));
 			_kD.push_back(paramProvider.getDouble("LIN_KD"));
 			_isKinetic.push_back(paramProvider.getBool("IS_KINETIC"));
+
+			paramProvider.popScope();
 		}
-		else if (bindModelNames[i] == "NONE")
+		else if (bindModelName == "NONE")
 		{
 			_kA.push_back(0.0);
 			_kD.push_back(1.0);
 			_isKinetic.push_back(false);
 		}
 		else
-			throw InvalidParameterException("Field ADSORPTION_MODEL contains unsupported binding model (" + bindModelNames[i] + ")");
+			throw InvalidParameterException("Field ADSORPTION_MODEL contains unsupported binding model (" + bindModelName + ")");
+
+		paramProvider.popScope(); // particle_type_XXX
 	}
 
 	return true;
@@ -150,42 +157,42 @@ bool ColumnWithParticles::configure(io::IParameterProvider& paramProvider)
 {
 	ColumnLikeModel::configure(paramProvider);
 
-	if (paramProvider.exists("PAR_GEOM"))
-	{
-		std::vector<std::string> pg = paramProvider.getStringArray("PAR_GEOM");
-		for (const std::string entry : pg) {
-			if (entry != "SPHERE") {
-				throw InvalidParameterException("Only spherical particles can be simulated, but " + entry + " was specified");
-			}
-		}
-	}
-
-	int numParType = 1;
+	const int nParType = paramProvider.getInt("NPARTYPE");
 	if (paramProvider.exists("PAR_TYPE_VOLFRAC"))
 	{
 		const std::vector<double> parTypeVolFrac = paramProvider.getDoubleArray("PAR_TYPE_VOLFRAC");
-		numParType = paramProvider.numElements("PAR_TYPE_VOLFRAC");
-		_parTypeVolFrac = std::move(toMPreal(parTypeVolFrac, numParType));
+		if (nParType != paramProvider.numElements("PAR_TYPE_VOLFRAC"))
+			throw InvalidParameterException("Field PAR_TYPE_VOLFRAC has to have NPARTYPE = " + std::to_string(nParType) + " elements");
+		_parTypeVolFrac = std::move(toMPreal(parTypeVolFrac, nParType));
 	}
 	else
 	{
 		_parTypeVolFrac.push_back(1.0);
 	}
 
-	const std::vector<double> parRadius = paramProvider.getDoubleArray("PAR_RADIUS");
-	if ((parRadius.size() != 1) && (parRadius.size() != numParType))
-		throw InvalidParameterException("Field PAR_RADIUS has to have 1 or " + std::to_string(numParType) + " elements");
-	_parRadius = std::move(toMPreal(parRadius, numParType));
+	for(int type = 0; type < nParType; type++)
+	{
+		std::ostringstream oss;
+		oss << "particle_type_"  << std::setw(3) << std::setfill('0') << type;
 
-	const std::vector<double> parPorosity = paramProvider.getDoubleArray("PAR_POROSITY");
-	if ((parPorosity.size() != 1) && (parPorosity.size() != numParType))
-		throw InvalidParameterException("Field PAR_POROSITY has to have 1 or " + std::to_string(numParType) + " elements");
-	_parPorosity = std::move(toMPreal(parPorosity, numParType));
+		paramProvider.pushScope(oss.str());
 
-	const std::vector<double> filmDiffusion = paramProvider.getDoubleArray("FILM_DIFFUSION");
-	if ((filmDiffusion.size() != 1) && (filmDiffusion.size() != numParType))
-		throw InvalidParameterException("Field FILM_DIFFUSION has to have 1 or " + std::to_string(numParType) + " elements");
-	_filmDiffusion = std::move(toMPreal(filmDiffusion, numParType));
+		if (paramProvider.exists("PAR_GEOM"))
+		{
+			std::vector<std::string> pg = paramProvider.getStringArray("PAR_GEOM");
+			for (const std::string entry : pg) {
+				if (entry != "SPHERE") {
+					throw InvalidParameterException("Only spherical particles can be simulated, but " + entry + " was specified");
+				}
+			}
+		}
+
+		_parRadius.push_back(paramProvider.getDouble("PAR_RADIUS"));
+		_parPorosity.push_back(paramProvider.getDouble("PAR_POROSITY"));
+		_filmDiffusion.push_back(paramProvider.getDouble("FILM_DIFFUSION"));
+
+		paramProvider.popScope(); // particle_type_XXX
+	}
 
 	_betaC = (_one - _colPorosity) / _colPorosity;
 
@@ -225,48 +232,41 @@ bool ColumnWithPoreDiffusion::configure(io::IParameterProvider& paramProvider)
 {
 	ColumnWithParticles::configure(paramProvider);
 
-	if (paramProvider.exists("NBOUND"))
-		_nBound = std::move(paramProvider.getIntArray("NBOUND"));
-	else // backwards compatibility
+	const int nParType = paramProvider.getInt("NPARTYPE");
+
+	for(int type = 0; type < nParType; type++)
 	{
-		paramProvider.pushScope("discretization");
-		_nBound = std::move(paramProvider.getIntArray("NBOUND"));
-		paramProvider.popScope();
+		std::ostringstream oss;
+		oss << "particle_type_"  << std::setw(3) << std::setfill('0') << type;
+
+		paramProvider.pushScope(oss.str());
+
+		std::vector<int> nBound = std::move(paramProvider.getIntArray("NBOUND"));
+		_nBound.insert(_nBound.end(), nBound.begin(), nBound.end());
+
+		if (paramProvider.exists("PAR_CORERADIUS"))
+			_parCoreRadius.push_back(paramProvider.getDouble("PAR_CORERADIUS"));
+		else
+			_parCoreRadius.push_back(0.0);
+
+		_parDiffusion.push_back(paramProvider.getDouble("PORE_DIFFUSION"));
+
+		if (paramProvider.exists("SURFACE_DIFFUSION"))
+			_parSurfDiffusion.push_back(paramProvider.getDouble("SURFACE_DIFFUSION"));
+		else
+			_parSurfDiffusion.push_back(0.0);
+
+		paramProvider.popScope(); // particle_type_XXX
 	}
 
 	const int numBound = std::accumulate(_nBound.begin(), _nBound.end(), 0);
-	const int numParType = _parTypeVolFrac.size();
 
-	if (paramProvider.exists("PAR_CORERADIUS"))
-	{
-		const std::vector<double> parCoreRadius = paramProvider.getDoubleArray("PAR_CORERADIUS");
-		if ((parCoreRadius.size() != 1) && (parCoreRadius.size() != numParType))
-			throw InvalidParameterException("Field PAR_CORERADIUS has to have 1 or " + std::to_string(numParType) + " elements");
-		_parCoreRadius = std::move(toMPreal(parCoreRadius, numParType));
-	}
-	else
-		_parCoreRadius = std::move(std::vector<mpfr::mpreal>(numParType, 0.0));
-
-	const std::vector<double> parDiffusion = paramProvider.getDoubleArray("PAR_DIFFUSION");
-	if ((parDiffusion.size() != 1) && (parDiffusion.size() != numParType))
-		throw InvalidParameterException("Field PAR_DIFFUSION has to have 1 or " + std::to_string(numParType) + " elements");
-	_parDiffusion = std::move(toMPreal(parDiffusion, numParType));
-
-	std::vector<double> parSurfDiffusion;
-	if (paramProvider.exists("PAR_SURFDIFFUSION"))
-		parSurfDiffusion = paramProvider.getDoubleArray("PAR_SURFDIFFUSION");
-	else
-		parSurfDiffusion = { 0.0 };
-	if ((parSurfDiffusion.size() != 1) && (parSurfDiffusion.size() != numBound))
-		throw InvalidParameterException("Field PAR_SURFDIFFUSION has to have 1 or " + std::to_string(numBound) + " elements");
-	_parSurfDiffusion = std::move(toMPreal(parSurfDiffusion, numBound));
-
-	if (numBound != numParType)
+	if (numBound != nParType)
 	{
 		// Introduce zero padding
-		std::vector<mpfr::mpreal> p(numParType);
+		std::vector<mpfr::mpreal> p(nParType);
 		int j = 0;
-		for (int i = 0; i < numParType; ++i)
+		for (int i = 0; i < nParType; ++i)
 		{
 			if (_nBound[i] > 0)
 			{
@@ -279,9 +279,9 @@ bool ColumnWithPoreDiffusion::configure(io::IParameterProvider& paramProvider)
 		_parSurfDiffusion = std::move(p);
 	}
 
-	_temp1.reserve(_parTypeVolFrac.size());
-	_temp2.reserve(_parTypeVolFrac.size());
-	for (int j = 0; j < _parTypeVolFrac.size(); ++j)
+	_temp1.reserve(nParType);
+	_temp2.reserve(nParType);
+	for (int j = 0; j < nParType; ++j)
 	{
 		if (_isKinetic[j])
 		{

@@ -2,7 +2,8 @@
 
 # CADET-Semi-Analytic (CASEMA) Interface Documentation
 
-The interface of **CADET-Semi-Analytic (CASEMA)** follows the **CADET file format v50000**, as documented at [https://cadet.github.io/](https://cadet.github.io/). This format is implemented, for example, in **CADET-Core version 5.0.0**.
+The interface of **CADET-Semi-Analytic (CASEMA)** follows the **CADET file format** documented at [https://cadet.github.io/](https://cadet.github.io/).
+Specifically, CASEMA supports the file format used in **CADET-Core v6**.
 
 However, there are key differences between CASEMA and CADET-Core due to differences in simulatable models and numerical methods.
 

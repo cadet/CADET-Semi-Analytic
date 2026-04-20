@@ -25,6 +25,8 @@
 #include "MPReal.hpp"
 #include "MPComplex.hpp"
 #include "MPComplexEigen.hpp"
+#include "io/ParameterProvider.hpp"
+#include "Exceptions.hpp"
 
 #include <tuple>
 #include <vector>
@@ -39,6 +41,14 @@ namespace io
 
 namespace model
 {
+
+/**
+ * @brief creates unit operation name based on unit configuration
+ * @details overwrites solumn unit names with legacy name if applicable
+ * @param [in] paramProvider Parameter provider for reading parameters
+ * @return @c unit operation name
+ */
+std::string getUnitName(io::IParameterProvider& paramProvider);
 
 /**
  * @brief Defines an unit operation model interface
