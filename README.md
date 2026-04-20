@@ -87,14 +87,14 @@ The project is built with CMake and depends on HDF5, GMP, MPFR, MPC and a C++ to
 
 ## Using CADET-semi-analytic
 
-CADET-semi-analytic uses the [CADET file format](https://cadet.github.io/master/interface/index.html).
-However, it is limited to linear single component models. Examples can be found in [CADET-Verification](https://github.com/cadet/CADET-Verification), where CASEMA results are used as reference solutions.
+CADET-Semi-Analytic uses the [CADET file format](https://cadet.github.io/master/interface/index.html) but is limited to linear single component models.
+Model and solver configuration are recommended to be supplied via h5 input files, see [Interface Documentation](doc/interface.md) for details.
 
-***The interface and program options is documented in the [Interface Documentation](doc/interface.md).***
+***The model interface and solver options are documented in the [Interface Documentation](doc/interface.md).***
 
 ### Example
 
-Example files are provided under `test/data`.
+Example files are provided under `test/data` and in [CADET-Verification](https://github.com/cadet/CADET-Verification).
 Suppose your model is contained in the HDF5 file `model.h5`, then you can compute the chromatogram via (windows)
   ```
 	casema-cli.exe model.h5 -o chromatogram.csv -e 1e-100 -p 250 -P 20 -t 4
@@ -102,8 +102,8 @@ Suppose your model is contained in the HDF5 file `model.h5`, then you can comput
   The results are written to the file `chromatogram.csv`.
 
 Alternatively, you can choose to write the output to the H5 input file, following the CADET file format.
-Note, however, that in this mode, the output precision is constrained by the H5 format, which does not support arbitrary precision, and is instead limited by the numerical limits of the C++ double type.
+Note, however, that in this mode, the output precision is constrained by the H5 format, which does not support arbitrary precision.
   ```
-	casema-cli.exe model.h5 -e 1e-100 -p 250 -P 20 -t 4
+	casema-cli.exe model.h5
   ```
 

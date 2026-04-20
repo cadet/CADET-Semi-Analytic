@@ -9,7 +9,7 @@ However, there are key differences between CASEMA and CADET-Core due to differen
 
 ---
 
-## Key Differences from CADET-Core
+# Key Differences from CADET-Core
 
 ### 1. Supported Models
 
@@ -38,13 +38,30 @@ However, there are key differences between CASEMA and CADET-Core due to differen
 
 ---
 
-## Numerical Settings and Configuration
+# Numerical Settings and Configuration
 
-CASEMA does **not** use the `solver` or `discretization` groups from the CADET input file.
-Instead, the following program options can be provided to control numerical methods, tolerances, and I/O.
+CASEMA does **not** use the same `solver` or `discretization` configuration from the CADET-Core input file format.
+Instead, the following **solver options** can be provided to control numerical methods, tolerances, and I/O.
+**For an h5 input file, the solver options can be provided in the subgroup `input\solver\casema_options`**. Only `NUMTHREADS` is specified under `input\solver` (similar to CADET-Core).
 
-### Program Options
+## Solver Options
 
+| CLI argument   | HDF5 input           | Description                                                                  | Optional                      |
+| -------------- | -------------------- | ---------------------------------------------------------------------------- | ----------------------------- |
+| `-m`           | --                   | Path to the input model file (`.h5` or `.xml`) following CADET format        | ⚠️ Required for CLI           |
+| `-o`           | --                   | Path to output file (`.csv` or `.h5`), controls format and metadata behavior | ✅ Optional                   |
+| `-e`           | `ERROR_TOL`          | Relative error threshold for adaptive inversion and error estimation         | ✅ Optional (default `1e-10`) |
+| `-w`           | `ERROR_WEIGHT`       | Weight in [0, 1] between consistency and truncation error                    | ✅ Optional (default `0.5`)   |
+| `-a`           | `ABSCISSA`           | Bromwich contour shift for Laplace inversion (Durbin method)                 | ⚠️ Somtimes, see description  |
+| `-N`           | `MAX_SUMMANDS`       | Maximum number of Laplace summands allowed                                   | ✅ Optional                   |
+| `-n`           | `HANKEL_SUMMANDS`    | Number of Hankel/Dini summands (2D models only)                              | ⚠️ Required for 2D models     |
+| `-p`           | `WORKING_PRECISION`  | Internal arithmetic precision (decimal digits, MPFR, >= 20 recommended)      | ⚠️ Required                   |
+| `-P`           | `OUTPUT_PRECISION`   | Number of digits written to CSV output                                       | ✅ Optional                   |
+| `-t`           | `NUM_THREADS`        | Maximum number of threads used for computation                               | ✅ Optional                   |
+| `-ignorecstr`  | `IGNORE_CSTR_ERROR`  | Exclude CSTRs from automatic error estimation                                | ✅ Optional                   |
+| `-kahan`       | `KAHAN_SUMMATION`    | Enable compensated summation for improved numerical accuracy                 | ✅ Optional                   |
+
+### Solver Options - Details
 - `-model <file>` (model input file required)
   - Path to the input model file. Accepted file formats are `.h5` (HDF5) and `.xml`, both have to follow the CADET input format.
 - `-m <file>` (model input file required)
@@ -53,10 +70,10 @@ Instead, the following program options can be provided to control numerical meth
 - `-o <file>` (solution output file optional)
 - `-o <file>` (solution output file, optional)
   - Path to the output file. Supported formats are `.csv` and `.h5`.
-  - For `.h5`: program options are saved as meta data. Loss of arbitrary precision output: Numeric values are written as doubles. Working precision is not affected.
+  - For `.h5`: solver options are saved as meta data. Loss of arbitrary precision output: Numeric values are written as doubles. Working precision is not affected.
   - For `.csv`: arbitrary precision solution, the number formatting uses the `-P` option;
   - Optional for `.h5` inputs (in that case CASEMA will default the output to the input filename). For `.xml` inputs specify an output path explicitly if you want a `.h5` or `.csv` result.
-  - HDF5 (`.h5`) behaviour: numeric solution arrays are written as IEEE `double` (64-bit). CASEMA writes meta data, including the program options into the file.
+  - HDF5 (`.h5`) behaviour: numeric solution arrays are written as IEEE `double` (64-bit). CASEMA writes meta data, including the solver options into the file.
   - CSV (`.csv`) behaviour: arbitrary precision solution, number formatting is based on the `-P` option;
   - Optional for `.h5` inputs (in that case CASEMA will default the output to the input filename). For `.xml` inputs specify an output path explicitly if you want a `.h5` or `.csv` result.
 
