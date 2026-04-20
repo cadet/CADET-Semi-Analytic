@@ -57,7 +57,7 @@ namespace
 					"LIN_KA": [35.5],
 					"LIN_KD": [1000.0]
 				},
-				"discretization:
+				"discretization":
 				{
 					"NPAR": 4,
 					"PAR_DISC_TYPE": "EQUIDISTANT_PAR"
@@ -103,7 +103,6 @@ namespace
 				"PORE_DIFFUSION": [6.07e-11],
 				"SURFACE_DIFFUSION": [0.0],
 				"PAR_RADIUS": 4.5e-5,
-				"COL_POROSITY": 0.37,
 				"PAR_POROSITY": 0.75,
 				"INIT_CP": [0.0],
 				"INIT_CS": [0.0],
