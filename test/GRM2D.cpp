@@ -140,7 +140,7 @@ namespace
 				}
 			}
 			})json");
-		j["COL_DISPERSION"] = colDispersion;
+		j["COL_DISPERSION_AXIAL"] = colDispersion;
 		j["COL_LENGTH"] = colLength;
 		j["COL_RADIUS"] = radius;
 		j["particle_type_000"]["adsorption"]["LIN_KA"] = std::vector<double>{kA};
