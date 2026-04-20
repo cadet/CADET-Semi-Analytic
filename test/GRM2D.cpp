@@ -95,6 +95,7 @@ namespace
 			"COL_DISPERSION_RADIAL": 5e-8,
 			"COL_LENGTH": 0.014,
 			"COL_RADIUS": 0.03,
+			"COL_POROSITY": 0.37,
 			"INIT_C": [0.0],
 			"NPARTYPE": 1,
 			"particle_type_000":
@@ -223,6 +224,7 @@ TEST_CASE("GRM vs GRM2D two zones", "[Bessel],[GRM],[2DGRM],[CI]")
 	casema::besselZerosJ1(zeros.size(), zeros.data());
 
 	m2d->setSectionTimes(secTimes.data(), secTimes.size());
+	m2d->setFlowRates(&Q, &Q);
 	m2d->setBesselZeros(zeros.data(), zeros.size());
 
 	m1d->setSectionTimes(secTimes.data(), secTimes.size());
