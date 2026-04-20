@@ -224,7 +224,6 @@ TEST_CASE("GRM vs GRM2D two zones", "[Bessel],[GRM],[2DGRM],[CI]")
 	casema::besselZerosJ1(zeros.size(), zeros.data());
 
 	m2d->setSectionTimes(secTimes.data(), secTimes.size());
-	m2d->setFlowRates(&Q, &Q);
 	m2d->setBesselZeros(zeros.data(), zeros.size());
 
 	m1d->setSectionTimes(secTimes.data(), secTimes.size());
