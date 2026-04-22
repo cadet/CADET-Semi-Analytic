@@ -320,7 +320,7 @@ void writeMetaAndResultToH5(const ProgramOptions& opts, const casema::model::Mod
 
 	writer->pushGroup("solution");
 
-	const int timePoints = solutionTimes.size() - timeOffset;
+	const int timePoints = solutionTimes.size();
 	std::vector<double> solutionBuffer(timePoints);
 
 	const int numUnits = sys->numModels();
@@ -328,7 +328,7 @@ void writeMetaAndResultToH5(const ProgramOptions& opts, const casema::model::Mod
 	int numWrittenOutlets = 0;
 
 	for (int i = 0; i < timePoints; i++)
-		solutionBuffer[i] = static_cast<double>(solutionTimes[i + timeOffset]);
+		solutionBuffer[i] = static_cast<double>(solutionTimes[i]);
 
 	writer->writeVectorDouble("SOLUTION_TIMES", timePoints, solutionBuffer.data(), 1, timePoints);
 
@@ -346,8 +346,18 @@ void writeMetaAndResultToH5(const ProgramOptions& opts, const casema::model::Mod
 		// always split ports
 		for (int k = 0; k < nPorts; ++k)
 		{
-			for (int i = 0; i < timePoints; i++)
-				solutionBuffer[i] = static_cast<double>(output(numWrittenOutlets, i));
+			// Write initial condition at t=0 if timeOffset = 1
+			if (timeOffset == 1)
+			{
+				solutionBuffer[0] = 0.0;
+				for (int i = 1; i < timePoints; i++)
+					solutionBuffer[i] = static_cast<double>(output(numWrittenOutlets, i - 1));
+			}
+			else
+			{
+				for (int i = 0; i < timePoints; i++)
+					solutionBuffer[i] = static_cast<double>(output(numWrittenOutlets, i));
+			}
 
 			oss << std::setw(3) << std::setfill('0') << k;
 			const std::string outName = (single_as_multi_port || nPorts > 1) ? "SOLUTION_OUTLET_PORT_" + oss.str() : "SOLUTION_OUTLET";
@@ -443,6 +453,15 @@ void writeResult(std::ostream& fs, const std::vector<mpfr::mpreal>& time, const 
 
 	fs.flags(std::ios::scientific);
 	fs.precision(precision);
+
+	// If timeOffset = 1, write initial condition (t=0) with zero concentrations
+	if (timeOffset == 1)
+	{
+		fs << time[0];
+		for (std::size_t j = 0; j < numOutlets; ++j)
+			fs << "," << mpfr::mpreal(0);
+		fs << "\n";
+	}
 
 	for (std::size_t i = 0; i < time.size() - timeOffset; ++i)
 	{
