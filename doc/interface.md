@@ -138,8 +138,30 @@ An exception is raised when guaranteed error bounds are not available.
 - Manual (abscissa + summands): provide `-a <abscissa>` and `-N <max-summands>`.
 This mode is **required** when guaranteed error bounds are not available.
 Guaranteed error bounds are not available in:
-- cyclic systems
-- if any unit operation has initial conditions $> 0$
-- CSTRs with variable volume
-- GRM with surface diffusion and kinetic adsorption
-- 2D models (2DGRM). Here, the user must additionally supply a positive `-n <hankel-summands>`.
+  - cyclic systems
+  - if any unit operation has initial conditions $> 0$
+  - CSTRs with variable volume
+  - GRM with surface diffusion and kinetic adsorption
+  - 2D models (2DGRM). Here, the user must additionally supply a positive `-n <hankel-summands>`.
+
+The abscissa $a>0$ and Laplace summands $N\in\mathbb{N}$ for a desired error bound $E^\mathrm{des}>0$ can be calculated for a General Rate Model with equilibrium binding kinetics according to the following formula from [S. Leweke and E. von Lieres (2016)](https://doi.org/10.1016/j.compchemeng.2015.09.009):
+```math
+a \geq \frac{1}{T} \ln\left( \frac{\|c^\mathrm{in}\|_\infty}{w E^\mathrm{des}} + 1 \right),
+```
+```math
+N \geq \left[ \frac{1}{\gamma} E_1^{-1}\left( \frac{(1-w) E^\mathrm{des}}{\sigma e^{2aT}} \right) \right]^2 - 1.
+```
+Here,
+```math
+\sigma := \sqrt{32} \frac{M^\mathrm{in}(a)}{\pi} \, \exp \left( \frac{L u}{2 D^\mathrm{ax}} \right),
+```
+```math
+\gamma := \frac{L \sqrt{\pi}}{\sqrt{2 D^\mathrm{ax} T}},
+```
+```math
+E_1(x) := \int_x^\infty \frac{e^{-t}}{t} dt,
+```
+and assuming a step-like inlet profile $c^\mathrm{in}$ that fulfills
+```math
+|c^\mathrm{s}| \leq \frac{M^\mathrm{in}(a)}{|s|} \quad \forall s\in\{a+iy \colon y\geq 0 \}.
+```
