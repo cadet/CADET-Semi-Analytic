@@ -72,6 +72,7 @@ public:
 	void evaluate(const mpfr::mpcomplex& s, mpfr::mpcomplex* res, Workspace& ws) const CASEMA_NOEXCEPT;
 
 	bool hasValidEstimate() const CASEMA_NOEXCEPT;
+	mpfr::mpreal initialOutletValue(int unitIdx, int outletPort) const CASEMA_NOEXCEPT;
 	mpfr::mpreal timeDomainUpperBound() const CASEMA_NOEXCEPT;
 	mpfr::mpreal truncationError(const mpfr::mpreal& abscissa, const mpfr::mpreal& T, const mpfr::mpreal& nTerms) const CASEMA_NOEXCEPT;
 	mpfr::mpreal inverseTruncationError(const mpfr::mpreal& abscissa, const mpfr::mpreal& T, const mpfr::mpreal& error) const CASEMA_NOEXCEPT;

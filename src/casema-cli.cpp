@@ -349,7 +349,7 @@ void writeMetaAndResultToH5(const ProgramOptions& opts, const casema::model::Mod
 			// Write initial condition at t=0 if timeOffset = 1
 			if (timeOffset == 1)
 			{
-				solutionBuffer[0] = 0.0;
+				solutionBuffer[0] = static_cast<double>(sys->initialOutletValue(j, k));
 				for (int i = 1; i < timePoints; i++)
 					solutionBuffer[i] = static_cast<double>(output(numWrittenOutlets, i - 1));
 			}
@@ -454,12 +454,16 @@ void writeResult(std::ostream& fs, const std::vector<mpfr::mpreal>& time, const 
 	fs.flags(std::ios::scientific);
 	fs.precision(precision);
 
-	// If timeOffset = 1, write initial condition (t=0) with zero concentrations
+	// If timeOffset = 1, write initial condition (t=0) from model-specific initial values
 	if (timeOffset == 1)
 	{
 		fs << time[0];
-		for (std::size_t j = 0; j < numOutlets; ++j)
-			fs << "," << mpfr::mpreal(0);
+		for (std::size_t j = 0; j < numUnits; ++j)
+		{
+			casema::model::UnitOperation const* const m = model.unitOperation(j);
+			for (int k = 0; k < std::max(1, m->numOutletPorts()); ++k)
+				fs << "," << model.initialOutletValue(j, k);
+		}
 		fs << "\n";
 	}
 
