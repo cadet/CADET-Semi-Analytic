@@ -96,16 +96,18 @@ bool readProgramOptionsFromH5(const std::string& fileName, ProgramOptions& opts)
 
 	rd->pushGroup("solver");
 
+	if (!rd->exists("casema_options"))
+	{
+		rd->popGroup(); // solver
+		rd->popGroup(); // input
+		rd->closeFile();
+		return false;
+	}
+
 	if (rd->exists("NTHREADS"))
 	{
 		opts.numThreads = rd->getInt("NTHREADS");
 		std::cout << "Reading input from h5: NTHREADS = " << std::to_string(opts.numThreads) << std::endl;
-	}
-
-	if (!rd->exists("casema_options"))
-	{
-		rd->closeFile();
-		return false;
 	}
 
 	rd->pushGroup("casema_options");
@@ -123,6 +125,10 @@ bool readProgramOptionsFromH5(const std::string& fileName, ProgramOptions& opts)
 		precision = std::min(h5Prec, maxPrecision);
 
 		foundH5Options = true;
+	}
+	else
+	{
+		std::cerr << "ERROR: field WORKING_PRECISION precision must be specified" << std::endl;
 	}
 
 	opts.precision = precision;
