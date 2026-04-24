@@ -266,7 +266,7 @@ void writeMetaAndResultToH5(const ProgramOptions& opts, const casema::model::Mod
 	writer->writeString("CASEMA_VERSION", casema::getVersion());
 	writer->writeString("CASEMA_BRANCH", casema::getBranchRefspec());
 	writer->writeString("CASEMA_COMMIT", casema::getCommitHash());
-	writer->writeInt("FILE_FORMAT", casema::getFileFormat());
+	writer->writeString("FILE_FORMAT", casema::getFileFormat());
 	writer->writeDouble("TIME_SIM", time_sim);
 	{
 		std::ostringstream oss;
