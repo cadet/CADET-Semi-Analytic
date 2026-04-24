@@ -109,6 +109,8 @@ bool ConvectionDispersionLikeModel::configure(io::IParameterProvider& paramProvi
 	}
 */
 
+	if(paramProvider.isArray("INIT_C"))
+		throw InvalidParameterException("Only scalar INIT_C supported");
 	_initC = paramProvider.getDouble("INIT_C");
 
 	return true;

@@ -66,6 +66,7 @@ public:
 
 	virtual bool hasValidEstimate() const CASEMA_NOEXCEPT;
 	virtual mpfr::mpreal estimate(const mpfr::mpreal& abscissa) const CASEMA_NOEXCEPT;
+	virtual mpfr::mpreal initialOutletValue(int) const CASEMA_NOEXCEPT { return _initC; }
 	virtual mpfr::mpreal timeDomainUpperBound(mpfr::mpreal const* in) const CASEMA_NOEXCEPT { return in[0] + _initC; }
 	virtual mpfr::mpreal truncationError(const mpfr::mpreal& M, const mpfr::mpreal& abscissa, const mpfr::mpreal& T, const mpfr::mpreal& nTerms) const CASEMA_NOEXCEPT;
 	virtual mpfr::mpreal inverseTruncationError(const mpfr::mpreal& M, const mpfr::mpreal& abscissa, const mpfr::mpreal& T, const mpfr::mpreal& error) const CASEMA_NOEXCEPT;

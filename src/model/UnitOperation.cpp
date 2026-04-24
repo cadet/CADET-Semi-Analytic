@@ -123,6 +123,12 @@ bool UnitOperation::configure(io::IParameterProvider& paramProvider)
 	return true;
 }
 
+mpfr::mpreal UnitOperation::initialOutletValue(int port) const CASEMA_NOEXCEPT
+{
+	(void)port;
+	return mpfr::mpreal(0.0);
+}
+
 }  // namespace model
 
 }  // namespace casema

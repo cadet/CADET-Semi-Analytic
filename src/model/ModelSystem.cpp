@@ -893,6 +893,44 @@ bool ModelSystem::hasValidEstimate() const CASEMA_NOEXCEPT
 	return true;
 }
 
+mpfr::mpreal ModelSystem::initialOutletValue(int unitIdx, int outletPort) const CASEMA_NOEXCEPT
+{
+	if ((unitIdx < 0) || (unitIdx >= static_cast<int>(_models.size())))
+		return mpfr::mpreal(0.0);
+
+	UnitOperation const* const unit = _models[unitIdx];
+
+	if (unit->numOutletPorts() > 0)
+		return unit->initialOutletValue(outletPort);
+
+	if (unit->numInletPorts() <= 0)
+		return mpfr::mpreal(0.0);
+
+	if ((outletPort < 0) || (outletPort >= unit->numInletPorts()))
+		return mpfr::mpreal(0.0);
+
+	// OUTLET-like units (no own outlet state) mirror their inlet at t=0.
+	const int row = _offsetUnitInlet[unitIdx] + outletPort * unit->numComponents();
+	mpfr::mpreal initVal(0.0);
+
+	for (int srcIdx = 0; srcIdx < static_cast<int>(_models.size()); ++srcIdx)
+	{
+		UnitOperation const* const src = _models[srcIdx];
+		if (src->numOutletPorts() <= 0)
+			continue;
+
+		for (int srcPort = 0; srcPort < src->numOutletPorts(); ++srcPort)
+		{
+			const int col = _offsetUnitOutlet[srcIdx] + srcPort * src->numComponents();
+			const mpfr::mpreal frac = _flowMatQtR(row, col);
+			if (frac != 0.0)
+				initVal += frac * src->initialOutletValue(srcPort);
+		}
+	}
+
+	return initVal;
+}
+
 mpfr::mpreal ModelSystem::timeDomainUpperBound() const CASEMA_NOEXCEPT
 {
 	mpfr::mpreal v(0.0);

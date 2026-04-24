@@ -161,6 +161,34 @@ mpfr::mpreal InletModel::estimate(const mpfr::mpreal& abscissa) const CASEMA_NOE
 	return val;
 }
 
+mpfr::mpreal InletModel::initialOutletValue(int port) const CASEMA_NOEXCEPT
+{
+	(void)port;
+
+	if (_const.empty())
+		return mpfr::mpreal(0.0);
+
+	const mpfr::mpreal t0(0.0);
+
+	if (_sectionTimes.size() >= 2)
+	{
+		const int maxSec = std::min<int>(static_cast<int>(_const.size()), static_cast<int>(_sectionTimes.size()) - 1);
+		for (int i = 0; i < maxSec; ++i)
+		{
+			if ((_sectionTimes[i] <= t0) && (t0 <= _sectionTimes[i + 1]))
+			{
+				const mpfr::mpreal dt = t0 - _sectionTimes[i];
+				return _const[i] + dt * (_lin[i] + dt * (_quad[i] + dt * _cub[i]));
+			}
+		}
+
+		if (t0 < _sectionTimes.front())
+			return mpfr::mpreal(0.0);
+	}
+
+	return _const.front();
+}
+
 mpfr::mpreal InletModel::timeDomainUpperBound(mpfr::mpreal const* in) const CASEMA_NOEXCEPT
 {
 	// Find maximum of nonnegative cubic spline
