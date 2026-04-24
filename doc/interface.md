@@ -139,7 +139,7 @@ An exception is raised when guaranteed error bounds are not available.
 This mode is **required** when guaranteed error bounds are not available.
 Guaranteed error bounds are not available in:
   - cyclic systems
-  - if any unit operation has initial conditions $> 0$
+  - if any unit operation has non-zero initial conditions
   - CSTRs with variable volume
   - GRM with surface diffusion and kinetic adsorption
   - 2D models (2DGRM). Here, the user must additionally supply a positive `-n <hankel-summands>`.
