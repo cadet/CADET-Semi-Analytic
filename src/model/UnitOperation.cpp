@@ -68,7 +68,7 @@ std::string getUnitName(io::IParameterProvider& paramProvider)
 					throw InvalidParameterException("Multiple particle types are not supported for transport model without pores (HAS_FILM_DIFFUSION=False)");
 				}
 
-				if (uoType == "COLUMN_MODEL_1D")
+				if (uoType == "COLUMN_MODEL_1D" || uoType == "LUMPED_RATE_MODEL_WITHOUT_PORES" || uoType == "LUMPED_RATE_MODEL_WITH_PORES" || uoType == "GENERAL_RATE_MODEL")
 				{
 					if(!hasFilmDiff)
 					{
@@ -95,15 +95,17 @@ std::string getUnitName(io::IParameterProvider& paramProvider)
 						}
 					}
 				}
-				else
+				else if (uoType == "COLUMN_MODEL_2D" || uoType == "GENERAL_RATE_MODEL_2D")
 				{
 					if(!hasFilmDiff)
 						throw InvalidParameterException("CASEMA does not support a 2D bulk transport model without pores (2DLRM). Mimic this by setting film diffusion coefficients to a large value");
 					else if (!hasPoreDiff && !hasSurfDiff)
-						throw InvalidParameterException("CASEMA does not support a 2D bulk transport model with particles without pore diffusion (2DLRMP). Only 2D GRM is supported");
+						throw InvalidParameterException("CASEMA does not support a 2D bulk transport model with particles without pore and surface diffusion (2DLRMP). Only 2D GRM is supported");
 					else
 						uoType = "GENERAL_RATE_MODEL_2D";
 				}
+				else
+					return uoType;
 
 				paramProvider.popScope(); // particle type group
 			}
