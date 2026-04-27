@@ -14,7 +14,86 @@ on:
         type: string
 
 jobs:
-  ubuntu-latest:
+  Win64:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: true
+    env:
+      BASE_DIR: ${{ github.workspace }}
+      SRC_DIR: ${{ github.workspace }}/src
+      BUILD_DIR: ${{ github.workspace }}/build
+      INSTALL_PREFIX: ${{ github.workspace }}/cadet
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          path: src
+          ref: ${{ github.event.inputs.ref || github.ref }}
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Get MSVC version
+        id: get-msvc
+        run: |
+          $MSVC_VERSION = cl 2>&1 | Select-String -Pattern 'Version (\d\d\.\d\d)' | % { $_.matches.groups[1].Value }
+          echo "version=$MSVC_VERSION" >> $Env:GITHUB_OUTPUT
+      - uses: actions/cache@v4
+        id: cache
+        with:
+          path: |
+            ${{ github.workspace }}/hdf5
+            ${{ github.workspace }}/eigen/install
+            ${{ github.workspace }}/gmp
+            ${{ github.workspace }}/mpfr
+            ${{ github.workspace }}/mpc
+          key: ${{ runner.os }}-deps-${{ steps.get-msvc.outputs.version }}-1
+      - name: Build HDF5 and Eigen3
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          $base_dir = $($env:BASE_DIR.Replace('\', '/'))
+
+          # Build HDF5
+          Invoke-WebRequest -Uri "https://www.hdfgroup.org/package/cmake-hdf5-1-14-0-zip/?wpdmdl=17553" -OutFile hdf5.zip
+          7z x hdf5.zip
+          cd CMake-hdf5-1.14.0
+          cmake -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_SHARED_LIBS:BOOL=ON -DHDF5_BUILD_FORTRAN:BOOL=OFF -DHDF5_ENABLE_F2003:BOOL=OFF -DHDF5_BUILD_JAVA:BOOL=OFF -DCMAKE_INSTALL_PREFIX:PATH="${base_dir}/hdf5" -DCTEST_CONFIGURATION_TYPE:STRING=Release -DBUILD_TESTING=ON -DHDF5_BUILD_TOOLS=OFF -DHDF5_BUILD_EXAMPLES=OFF -DHDF5_BUILD_HL_LIB=OFF -DHDF5_BUILD_CPP_LIB=OFF -DHDF5_ALLOW_EXTERNAL_SUPPORT:STRING=TGZ -DTGZPATH:PATH="${base_dir}/CMake-hdf5-1.14.0" -DHDF5_PACKAGE_EXTLIBS:BOOL=ON -DSITE:STRING=WIN10VS202264.XXXX -DBUILDNAME:STRING=Windows-WIN10-vs2022-STATIC -G "Ninja"  hdf5-1.14.0
+          ninja install
+          cd "${env:BASE_DIR}"
+
+          # Build GMP
+          Invoke-WebRequest -Uri "https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz" -OutFile gmp.tar.lz
+          7z x gmp.tar.lz
+          cd gmp-6.2.1
+          ./configure --prefix="${base_dir}/gmp"
+          make
+          make install
+          cd "${env:BASE_DIR}"
+
+          # Build MPFR
+          Invoke-WebRequest -Uri "https://www.mpfr.org/mpfr-current/mpfr-4.1.0.tar.gz" -OutFile mpfr.tar.gz
+          7z x mpfr.tar.gz
+          cd mpfr-4.1.0
+          ./configure --prefix="${base_dir}/mpfr" --with-gmp="${base_dir}/gmp"
+          make
+          make install
+          cd "${env:BASE_DIR}"
+
+          # Build MPC
+          Invoke-WebRequest -Uri "https://ftp.gnu.org/gnu/mpc/mpc-1.2.1.tar.gz" -OutFile mpc.tar.gz
+          7z x mpc.tar.gz
+          cd mpc-1.2.1
+          ./configure --prefix="${base_dir}/mpc" --with-gmp="${base_dir}/gmp" --with-mpfr="${base_dir}/mpfr"
+          make
+          make install
+          cd "${env:BASE_DIR}"
+
+          # Build Eigen3
+          Invoke-WebRequest -Uri "https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip" -OutFile eigen.zip
+          7z x eigen.zip -oeigen\code -y
+          cd eigen
+          mkdir build
+          cd build
+          cmake ../code/eigen-3.4.0 -DCMAKE_INSTALL_PREFIX="../install"
+          cmake --build . --target install
+  Ubuntu-latest:
     runs-on: ubuntu-latest
 
     steps:
