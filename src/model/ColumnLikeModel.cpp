@@ -249,6 +249,8 @@ bool ColumnWithPoreDiffusion::configure(io::IParameterProvider& paramProvider)
 		else
 			_parCoreRadius.push_back(0.0);
 
+		if(paramProvider.getDouble("PORE_DIFFUSION") <= 0.0)
+			throw InvalidParameterException("Field PORE_DIFFUSION has to be > 0.0. To effectively disable particles, set FILM_DIFFUSION to zero.");
 		_parDiffusion.push_back(paramProvider.getDouble("PORE_DIFFUSION"));
 
 		if (paramProvider.exists("SURFACE_DIFFUSION"))
